@@ -309,7 +309,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background:rad
 </div>
 <div class="tiles">
 <div class="tile"><div class="t-label">오늘 몸 부담 점수</div><div class="t-value" id="homeBlsTile">0</div><div class="t-sub">낮을수록 몸의 부담이 적어요</div></div>
-<div class="tile"><div class="t-label">앉아있는 시간</div><div class="t-value" id="sedentaryTime">0초</div><div class="t-sub" id="boutRuleLabel">1시간 0분 이상 앉으면 알려드려요</div></div>
+<div class="tile"><div class="t-label">앉아있는 시간</div><div class="t-value" id="sedentaryTime">0초</div><div class="t-sub" id="boutRuleLabel">30분 이상 앉으면 알려드려요</div></div>
 <div class="tile"><div class="t-label">점수 반영 전환</div><div class="t-value" id="eligibleTransitionHome">0회</div><div class="t-sub">앉기→서기·보행만 포함해요</div></div><div class="tile"><div class="t-label">루틴 순응도</div><div class="t-value" id="adherenceHome">0%</div><div class="t-sub">시작한 루틴 중 완료 비율이에요</div></div></div>
 <div class="section-head"><span class="section-title">오늘 움직인 기록</span></div>
 <div class="card">
@@ -594,7 +594,7 @@ const DEMO_TEMPLATES = {
   lying:{g:{x:0.95,y:0.05,z:0.30}}
 };
 const MODE = {
-  field:{sedentaryBout:3600, validBreak:120, validBreakContinuous:90, longBoutRisk:3600, routineWindow:600, standNonSed:120, standContinuous:90, walkRequired:120, walkContinuous:60, mobilityMove:60, mobilityRot:20, activeRatioTarget:.10, moveStartsPerHourTarget:6, intensityTarget:.85},
+  field:{sedentaryBout:1800, validBreak:120, validBreakContinuous:90, longBoutRisk:1800, routineWindow:600, standNonSed:120, standContinuous:90, walkRequired:120, walkContinuous:60, mobilityMove:60, mobilityRot:20, activeRatioTarget:.10, moveStartsPerHourTarget:6, intensityTarget:.85},
   demo:{sedentaryBout:20, validBreak:8, validBreakContinuous:6, longBoutRisk:30, routineWindow:90, standNonSed:8, standContinuous:6, walkRequired:8, walkContinuous:5, mobilityMove:8, mobilityRot:3, activeRatioTarget:.20, moveStartsPerHourTarget:8, intensityTarget:.85}
 };
 const clamp = (x,a=0,b=1) => Math.min(b,Math.max(a,x));
@@ -761,12 +761,12 @@ function computeOfficialScores(readSurvey=false){
   const awakeSeconds=Math.max(1,state.awakeHours*3600);
   const sedentaryRatio=clamp(state.sedentarySeconds/awakeSeconds,0,1);
   const sRatio=clamp(sedentaryRatio/0.7652,0,1);
-  const sBout=clamp(state.longestSedentaryBout/(3*3600),0,1);
-  const targetTransitions=32;
+  const sBout=clamp(state.longestSedentaryBout/1800,0,1);
+  const targetTransitions=Math.max(1,(state.awakeHours*60)/30);
   const sActivity=Math.max(0,1-(state.eligibleTransitionCount/targetTransitions));
   const sNorm=.4*sRatio+.4*sBout+.2*sActivity;
   const neck=clamp(Number(state.survey.neck)||1,1,5),back=clamp(Number(state.survey.back)||1,1,5),fatigue=clamp(Number(state.survey.fatigue)||1,1,5);state.survey={neck,back,fatigue};
-  const fNorm=clamp(((((neck+back)/2+fatigue)/2)-1)/4,0,1);
+  const fNorm=clamp((((neck+back+fatigue)/3)-1)/4,0,1);
   const bls=100*(.6*sNorm+.4*fNorm);
   state.sActivity=Math.round(sActivity*100);state.sNorm=sNorm;state.fNorm=fNorm;
   state.sParts={ratioRisk:Math.round(sRatio*100),boutRisk:Math.round(sBout*100),activityRisk:Math.round(sActivity*100),sedentaryRatio:Number(sedentaryRatio.toFixed(4)),targetTransitions:Number(targetTransitions.toFixed(1))};
