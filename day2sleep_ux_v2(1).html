@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
+<title>Day2Sleep — 낮의 행동을 읽고, 밤의 수면을 돕다</title>
+<meta content="스마트폰 IMU 기반 좌식 전환 감지, Body Load Score, 행동 루틴, 수면 기록과 커뮤니티 챌린지를 연결한 Day2Sleep 모바일 프로토타입" name="description"/>
+<style>
+    :root{--bg:#f6f7fb;--card:#fff;--text:#151823;--sub:#6a7080;--line:#e6e8ef;--primary:#4f6df5;--primary2:#7188ff;--good:#18a874;--warn:#f39c12;--bad:#e85d75;--shadow:0 14px 36px rgba(28,34,68,.10);--radius:22px}
+    *{box-sizing:border-box}html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",sans-serif}body{min-height:100vh}.app{max-width:560px;margin:0 auto;padding:18px 16px 108px}.hero{background:linear-gradient(135deg,#273469 0%,#4f6df5 55%,#81d4fa 100%);color:#fff;border-radius:28px;padding:22px;box-shadow:var(--shadow);position:relative;overflow:hidden}.hero:after{content:"";width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.14);position:absolute;right:-52px;top:-42px}.kicker{font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.78;font-weight:800}h1{margin:8px 0 6px;font-size:29px;line-height:1.08;letter-spacing:-.04em}.hero p{margin:0;font-size:14px;line-height:1.55;opacity:.92}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:0 8px 24px rgba(28,34,68,.06)}.metric{min-height:112px}.metric .label{color:var(--sub);font-size:12px;font-weight:750}.metric .value{margin-top:8px;font-size:25px;font-weight:950;letter-spacing:-.04em}.metric .small{color:var(--sub);font-size:12px;margin-top:6px;line-height:1.35}.section-title{margin:24px 2px 10px;font-size:18px;letter-spacing:-.02em}button,input,select{font:inherit}.btn{border:0;border-radius:16px;padding:13px 15px;font-weight:850;cursor:pointer;transition:transform .08s ease,opacity .12s ease}.btn:active{transform:scale(.98)}.btn-primary{width:100%;background:var(--primary);color:white;box-shadow:0 10px 20px rgba(79,109,245,.25)}.btn-secondary{background:#eef1ff;color:#3347aa}.btn-ghost{background:#f2f4f8;color:var(--text)}.btn-danger{background:#fff0f3;color:#b92346}.row{display:flex;gap:10px;align-items:center}.row>*{flex:1}.status-pill{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:8px 11px;font-size:12px;font-weight:850;background:#eef1ff;color:#3347aa}.dot{width:8px;height:8px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 4px rgba(79,109,245,.15)}.dot.active{background:var(--good);box-shadow:0 0 0 4px rgba(25,169,116,.16)}.dot.warn{background:var(--warn);box-shadow:0 0 0 4px rgba(243,156,18,.16)}.big-score{font-size:56px;font-weight:950;letter-spacing:-.06em;line-height:1;margin:6px 0 0}.score-band{height:12px;width:100%;background:linear-gradient(90deg,var(--good),var(--warn),var(--bad));border-radius:999px;overflow:hidden;margin:14px 0 5px;position:relative}.score-marker{position:absolute;top:-4px;width:5px;height:20px;background:#111827;border-radius:999px;left:0;transform:translateX(-2px)}.hint{color:var(--sub);font-size:12px;line-height:1.5}.form-group{margin:14px 0}.form-group label{display:flex;justify-content:space-between;gap:10px;font-size:14px;font-weight:850;margin-bottom:8px}.form-group .num{color:var(--primary)}input[type=range]{width:100%;accent-color:var(--primary)}input[type=time],input[type=number],select{width:100%;border:1px solid var(--line);border-radius:14px;padding:12px;background:#fbfcff;color:var(--text)}.list{margin:0;padding:0;list-style:none}.list li{padding:12px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;align-items:start}.list li:last-child{border-bottom:0}.list strong{font-size:14px}.list span{color:var(--sub);font-size:13px;text-align:right}.routine-card{border-radius:18px;padding:15px;background:#f8faff;border:1px solid #e5e9ff;margin-top:10px}.routine-title{font-weight:900;margin-bottom:6px}.routine-desc{color:var(--sub);font-size:13px;line-height:1.5}.bottom-nav{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);width:min(560px,calc(100% - 28px));background:rgba(255,255,255,.90);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);display:flex;gap:4px;padding:8px;z-index:10;overflow-x:auto;scrollbar-width:none}.bottom-nav::-webkit-scrollbar{display:none}.nav-btn{border:0;background:transparent;border-radius:15px;padding:9px 8px;font-size:11px;font-weight:850;color:var(--sub);cursor:pointer;min-width:62px;white-space:nowrap;flex:1 0 auto}.nav-btn.active{background:#eef1ff;color:var(--primary)}.screen{display:none}.screen.active{display:block}.log{max-height:210px;overflow:auto;border-radius:14px;background:#f7f8fb;padding:10px;font-size:12px;color:var(--sub);line-height:1.45;white-space:pre-wrap}.badge-good{color:var(--good)}.badge-warn{color:var(--warn)}.badge-bad{color:var(--bad)}.divider{height:1px;background:var(--line);margin:14px 0}.mini{font-size:12px;color:var(--sub)}.signal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}.signal{border:1px solid var(--line);border-radius:16px;padding:12px;background:#fbfcff}.signal strong{display:block;font-size:13px}.signal span{display:block;color:var(--sub);font-size:12px;margin-top:5px;line-height:1.35}.notice{border-radius:18px;padding:14px;background:#fff9ec;border:1px solid #ffe3a3;color:#6c4a00;font-size:13px;line-height:1.5}.ok{background:#edfdf6;border-color:#bfefd8;color:#126545}.cal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.progress{height:10px;background:#edf0f6;border-radius:999px;overflow:hidden;margin:8px 0}.progress>div{height:100%;background:var(--primary);width:0%}.formula{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.55;background:#f7f8fb;border-radius:14px;padding:12px;overflow:auto}.tag{display:inline-flex;padding:5px 8px;border-radius:999px;background:#eef1ff;color:#3347aa;font-size:11px;font-weight:800;margin:2px}.warnbox{border-radius:16px;background:#fff3f5;border:1px solid #ffd0d9;padding:12px;font-size:12px;line-height:1.5;color:#8c2440}
+
+    .leaderboard{width:100%;border-collapse:collapse;font-size:12px}.leaderboard th,.leaderboard td{padding:10px 6px;border-bottom:1px solid var(--line);text-align:left}.leaderboard th{color:var(--sub);font-weight:850}.leaderboard td:nth-child(1),.leaderboard th:nth-child(1){width:38px;text-align:center}.leaderboard td:nth-child(3),.leaderboard th:nth-child(3),.leaderboard td:nth-child(4),.leaderboard th:nth-child(4){text-align:right}.leaderboard tr.me{background:#eef1ff}.pill{display:inline-flex;align-items:center;gap:5px;padding:6px 9px;border-radius:999px;background:#f0f3ff;color:#3347aa;font-size:11px;font-weight:850}.survey-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.survey-grid .form-group{margin:4px 0}.text-input,textarea{width:100%;border:1px solid var(--line);border-radius:14px;padding:12px;background:#fbfcff;color:var(--text);font:inherit}textarea{min-height:96px;resize:vertical}.matrix-wrap{overflow:auto}.matrix{border-collapse:collapse;width:100%;min-width:420px;font-size:11px}.matrix th,.matrix td{padding:8px;border:1px solid var(--line);text-align:center}.matrix th{background:#f7f8fb}.test-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.test-actions .btn{width:100%}.soft-card{background:linear-gradient(135deg,#f8faff,#f0f8ff);border:1px solid #dfe7ff}.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat-chip{padding:11px;border-radius:14px;background:#f7f8fb;text-align:center}.stat-chip strong{display:block;font-size:18px}.stat-chip span{display:block;color:var(--sub);font-size:10px;margin-top:3px}.chart-wrap{position:relative;width:100%;height:210px;border:1px solid var(--line);border-radius:16px;background:#fbfcff;overflow:hidden;margin-top:10px}.chart-wrap canvas{width:100%;height:100%;display:block}.chart-legend{display:flex;flex-wrap:wrap;gap:8px;font-size:11px;color:var(--sub);margin-top:8px}.legend-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px}.toolbar{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:10px}.cal-quality{font-size:11px;color:var(--sub);line-height:1.4}.kv{display:grid;grid-template-columns:1fr auto;gap:8px;padding:7px 0;border-bottom:1px solid var(--line);font-size:12px}.kv:last-child{border-bottom:0}.threshold-good{font-weight:850}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.smallbtn{padding:10px 11px;border-radius:13px}.debug-note{font-size:11px;color:var(--sub);line-height:1.45;margin-top:8px}
+    @media(prefers-color-scheme:dark){.leaderboard tr.me{background:#20294f}.matrix th{background:#111526}.text-input,textarea{background:#111526;color:var(--text)}.soft-card{background:linear-gradient(135deg,#151a30,#102038);border-color:#26315d}.stat-chip{background:#111526}:root{--bg:#0d1020;--card:#161a2d;--text:#f4f6ff;--sub:#a4abc0;--line:#2a3048;--shadow:0 14px 36px rgba(0,0,0,.25)}input[type=time],input[type=number],select{background:#111526;color:var(--text)}.bottom-nav{background:rgba(22,26,45,.88)}.log,.formula{background:#111526}.btn-ghost{background:#222840;color:var(--text)}.signal{background:#111526}.chart-wrap{background:#111526}.routine-card{background:#111a3a;border-color:#26315d}.score-marker{background:#fff}.notice{background:#2a2410;border-color:#5b4513;color:#ffd985}.notice.ok{background:#102a20;border-color:#1f694d;color:#bdf0d8}.warnbox{background:#2a141b;border-color:#6a2537;color:#ffc4d0}}
+  
+/* Bada UX navigation lock */
+.bottom-nav{display:grid!important;grid-template-columns:repeat(5,1fr)!important;gap:0!important;overflow:visible!important;scrollbar-width:auto!important}
+.nav-btn{min-width:0!important;white-space:normal!important;flex:none!important;padding:9px 4px!important;font-size:12px!important}
+</style>
+</head>
+<body>
+<main class="app">
+<section class="hero">
+<div class="kicker">Day2Sleep · Smartphone IMU Wellness</div>
+<h1>좌식 전환 이벤트 감지</h1>
+<p>짧은 수직 impulse와 이후 안정 상태를 확인해 앉음·일어남 전환을 보수적으로 추정합니다.</p>
+</section>
+<section class="screen active" id="screen-home">
+<div class="grid">
+<div class="card metric"><div class="label">현재 활동</div><div class="value" id="activityValue">대기</div><div class="small" id="activityHint">센서 시작 전</div></div>
+<div class="card metric"><div class="label">분류 신뢰도</div><div class="value" id="confidenceValue">낮음</div><div class="small" id="confidenceHint">캘리브레이션 권장</div></div>
+<div class="card metric"><div class="label">S_norm</div><div class="value" id="activityScoreHome">0</div><div class="small">객관 신체부하 위험 · 0~100</div></div>
+<div class="card metric"><div class="label">좌식 시간</div><div class="value" id="sedentaryTime">0초</div><div class="small" id="boutRuleLabel">field: 60분 bout</div></div>
+</div>
+<h2 class="section-title">측정 조건</h2>
+<div class="card">
+<div class="form-group"><label>운영 모드</label><select id="operationMode"><option value="field">Field · 실제 임계값</option><option value="demo">Demo · 축약 임계값</option></select></div>
+<div class="form-group"><label>스마트폰 위치</label><select id="phoneMode"><option value="pocket">주머니/몸 밀착 · 4-state</option><option value="hand">손에 들고 있음 · 제한 분류</option><option value="desk">책상 위 · 자동 판정 보류</option></select></div>
+<div class="notice" id="positionNotice">4-state 분류는 주머니/몸 밀착 조건과 자세 캘리브레이션을 권장합니다.</div>
+<button class="btn btn-primary" id="startBtn" style="margin-top:12px">IMU 측정 시작</button>
+<div style="margin-top:10px"><span class="status-pill"><span class="dot" id="sensorDot"></span><span id="sensorStatus">센서 미작동</span></span></div>
+</div>
+<h2 class="section-title">오늘의 행동 요약</h2>
+<div class="card"><ul class="list">
+<li><strong>Sedentary bout</strong><span id="boutCount">0회</span></li>
+<li><strong>유효 좌식 중단</strong><span id="breakCount">0회</span></li>
+<li><strong>최장 연속 좌식</strong><span id="longestBout">0초</span></li>
+<li><strong>걷기 시간</strong><span id="walkingTime">0초</span></li>
+<li><strong>실제 전환횟수</strong><span id="transitionCount">0회</span></li>
+<li><strong>Body Load Score</strong><span id="homeBodyLoad">0점</span></li>
+</ul><div class="notice ok" style="margin-top:12px"><b>전환 카운트 규칙</b><br/>IMU가 정지→움직임 onset을 감지한 뒤, 상태가 <b>앉기→서기</b> 또는 <b>앉기→보행</b>으로 확정된 경우만 1회로 집계합니다. 앉기→눕기, 서기→앉기, 보행→앉기는 제외합니다.</div></div>
+<h2 class="section-title">빠른 시연</h2>
+<div class="card">
+<div class="row"><button class="btn btn-secondary" data-demo="seated">앉기</button><button class="btn btn-secondary" data-demo="standing">서기</button></div>
+<div class="row" style="margin-top:9px"><button class="btn btn-secondary" data-demo="lying">눕기</button><button class="btn btn-secondary" data-demo="walking">보행</button></div>
+<p class="hint">시연 버튼은 Demo 모드와 가상 pocket calibration profile을 사용합니다. 실제 측정은 아래 캘리브레이션을 사용하세요.</p>
+</div>
+</section>
+<section class="screen" id="screen-score">
+<h2 class="section-title">오늘의 Body Load Score</h2>
+<div class="card soft-card">
+<div class="mini">Body Load Score · 0점에 가까울수록 낮은 부하</div>
+<div class="big-score" id="bodyLoadValue">0</div>
+<div class="score-band"><div class="score-marker" id="bodyLoadMarker"></div></div>
+<div class="hint" id="bodyLoadLabel">점수 계산 전</div>
+</div>
+<h2 class="section-title">낮 활동 지표</h2>
+<div class="card">
+<div class="mini">S_norm 위험 점수</div><div class="big-score" id="sActivityValue">0</div><div class="score-band"><div class="score-marker" id="sActivityMarker"></div></div>
+<div class="hint" id="sActivityLabel">측정 데이터가 쌓이면 계산됩니다.</div>
+<div class="divider"></div>
+<ul class="list">
+<li><strong>좌식 시간 비율 위험</strong><span id="saRatio">0.000</span></li>
+<li><strong>연속 좌식 위험</strong><span id="saBout">0.000</span></li>
+<li><strong>전환 부족 위험</strong><span id="saTransitionDeficit">1.000</span></li>
+<li><strong>실제 전환횟수</strong><span id="actualTransitions">0회</span></li>
+<li><strong>목표 전환횟수</strong><span id="targetTransitions">38.4회</span></li>
+</ul>
+<div class="form-group"><label>오늘 각성시간 <span class="num" id="awakeHoursVal">16.0시간</span></label><input id="awakeHours" max="20" min="1" step="0.5" type="range" value="16"/></div>
+<div class="notice" id="demoScaleNotice" style="margin-top:12px">Field 모드는 실제 하루 기준으로 계산하고, Demo 모드는 시연을 위해 시간 기준만 축약합니다.</div>
+</div>
+<h2 class="section-title">오늘의 컨디션 체크</h2>
+<div class="card">
+<div class="form-group"><label>목 통증 <span class="num" id="neckVal">3</span></label><input id="neckPain" max="5" min="1" type="range" value="3"/></div>
+<div class="form-group"><label>허리 통증 <span class="num" id="backVal">3</span></label><input id="backPain" max="5" min="1" type="range" value="3"/></div>
+<div class="form-group"><label>피로도 <span class="num" id="fatigueVal">4</span></label><input id="fatigue" max="5" min="1" type="range" value="4"/></div>
+<button class="btn btn-primary" id="calcBodyLoadBtn" style="margin-top:12px">점수 업데이트</button>
+</div>
+<h2 class="section-title">점수 구성</h2>
+<div class="card"><ul class="list">
+<li><strong>객관 행동 지표</strong><span id="snormRaw">0.000</span></li>
+<li><strong>주관 컨디션 지표</strong><span id="fnormRaw">0.000</span></li>
+<li><strong>행동 지표 기여</strong><span id="blObjective">0점</span></li>
+<li><strong>컨디션 지표 기여</strong><span id="blSubjective">0점</span></li>
+</ul></div>
+</section>
+<section class="screen" id="screen-routine">
+<h2 class="section-title">교정 루틴 순응도 추정</h2>
+<div class="card">
+<div class="form-group"><label>검증할 루틴</label><select id="routineType"><option value="stand_break">기립 휴식</option><option value="walk_break">짧은 걷기</option><option value="mobility">스트레칭/모빌리티 proxy</option></select></div>
+<div class="routine-card"><div class="routine-title" id="routineTitle">기립 휴식</div><div class="routine-desc" id="routineDesc">Field: 비좌식 누적 120초 + 연속 90초 이상이면 센서 기반 완료.</div></div>
+<div class="row" style="margin-top:12px"><button class="btn btn-primary" id="routineStartBtn">검증 시작</button><button class="btn btn-ghost" id="routineStopBtn">중지</button></div>
+<button class="btn btn-secondary" id="routineManualBtn" style="width:100%;margin-top:9px">사용자 직접 수행 확인</button>
+<div class="progress"><div id="routineProgress"></div></div>
+<p class="hint" id="routineStatus">대기 중</p>
+<div class="divider"></div>
+<ul class="list">
+<li><strong>경과 시간</strong><span id="routineElapsed">0초</span></li>
+<li><strong>비좌식 누적</strong><span id="routineNonSed">0초</span></li>
+<li><strong>보행 누적</strong><span id="routineWalk">0초</span></li>
+<li><strong>움직임 누적</strong><span id="routineMove">0초</span></li>
+<li><strong>회전 활성</strong><span id="routineRot">0초</span></li>
+<li><strong>연속 보행</strong><span id="routineWalkContinuous">0초</span></li>
+<li><strong>순응 evidence</strong><span id="routineEvidence">0점</span></li>
+<li><strong>판정</strong><span id="routineResult">대기</span></li>
+</ul>
+<div class="warnbox" style="margin-top:10px">스트레칭 루틴은 스마트폰 IMU만으로 목·허리 동작 자체를 검증할 수 없으므로, 움직임·회전 패턴 기반의 <b>probable compliance proxy</b>와 사용자 직접 확인을 병행합니다.</div>
+</div>
+<h2 class="section-title">수행 기록</h2><div class="card"><div class="log" id="routineLog">아직 기록이 없습니다.</div></div>
+<h2 class="section-title">함께하는 챌린지</h2><h2 class="section-title">순응도 · 커뮤니티 챌린지</h2><div class="card soft-card">
+<div class="row"><div><div class="mini">내 회복 점수</div><div class="big-score" id="recoveryScore">100</div></div><div><span class="pill" id="adherencePill">순응도 0%</span><p class="hint">회복 점수는 BLS를 반대 방향으로 환산한 커뮤니티 비교용 지표입니다. 순응도는 시작한 루틴 중 완료된 비율을 보여줍니다.</p></div></div>
+<div class="divider"></div>
+<div class="stat-row">
+<div class="stat-chip"><strong id="routineAttempts">0</strong><span>시작</span></div>
+<div class="stat-chip"><strong id="routineSuccess">0</strong><span>완료</span></div>
+<div class="stat-chip"><strong id="routineFailed">0</strong><span>미확인</span></div>
+</div>
+</div><h2 class="section-title">그룹 랭킹</h2><div class="card">
+<div class="form-group"><label>닉네임</label><input class="text-input" id="communityNickname" maxlength="12" value="도윤"/></div>
+<button class="btn btn-secondary" id="saveNicknameBtn" style="width:100%">닉네임 저장·랭킹 반영</button>
+<div class="divider"></div>
+<table class="leaderboard"><thead><tr><th>순위</th><th>닉네임</th><th>회복점수</th><th>순응도</th></tr></thead><tbody id="leaderboardBody"></tbody></table>
+<p class="hint">현재 프로토타입은 로컬 데모 랭킹입니다. 실제 서비스에서는 익명화된 cohort와 서버 동기화가 필요합니다.</p>
+</div></section>
+<section class="screen" id="screen-detect">
+<h2 class="section-title">실시간 특징량</h2>
+<div class="card">
+<div class="signal-grid">
+<div class="signal"><strong>Raw class</strong><span id="rawClass">대기</span></div>
+<div class="signal"><strong>Smoothed class</strong><span id="smoothClass">대기</span></div>
+<div class="signal"><strong>정지→움직임</strong><span id="motionTransition">대기</span></div>
+<div class="signal"><strong>방향 전이</strong><span id="directionalTransition">없음</span></div>
+<div class="signal"><strong>lin RMS</strong><span id="linRms">0.000</span></div>
+<div class="signal"><strong>jerk mean</strong><span id="jerkMean">0.000</span></div>
+<div class="signal"><strong>gyro mean</strong><span id="gyroMean">0.0</span></div>
+<div class="signal"><strong>step rate</strong><span id="stepRate">0 bpm</span></div>
+</div>
+<div class="divider"></div>
+<h3 style="font-size:15px">Adaptive transition thresholds</h3>
+<ul class="list"><li><strong>Still lin RMS</strong><span id="thStillRms">0.120</span></li><li><strong>Move lin RMS</strong><span id="thMoveRms">0.350</span></li><li><strong>Move jerk</strong><span id="thMoveJerk">0.180</span></li><li><strong>Move gyro</strong><span id="thMoveRot">18.0</span></li><li><strong>Pre-still requirement</strong><span>1.0초</span></li><li><strong>Move→still requirement</strong><span>1.2초</span></li></ul>
+<p class="hint">초기값은 보수적 seed threshold이며, 정지 노이즈 캘리브레이션 후 noise floor에 비례해 자동 상승합니다.</p>
+</div>
+<h2 class="section-title">로그</h2><div class="card"><div class="log" id="mainLog">아직 기록이 없습니다.</div></div>
+<button class="btn btn-danger" id="resetBtn" style="width:100%;margin-top:12px">측정 데이터 초기화</button>
+<h2 class="section-title">개인 보정</h2><h2 class="section-title">개인 캘리브레이션</h2><div class="card">
+<div class="notice ok">권장 순서: ① 주머니 위치 고정 → ② 정지 노이즈 → ③ 앉기·서기·눕기 각각 3회 반복 → ④ 15초 걷기 → ⑤ 앉기↔서기 전환 5회. 반복 trial의 분산까지 확인합니다.</div>
+<div class="cal-grid" style="margin-top:12px">
+<button class="btn btn-secondary" data-cal="noise">정지 노이즈</button>
+<button class="btn btn-secondary" data-cal="seated">앉기 자세</button>
+<button class="btn btn-secondary" data-cal="standing">서기 자세</button>
+<button class="btn btn-secondary" data-cal="lying">눕기 자세</button>
+<button class="btn btn-secondary" data-cal="walking">보행 15초</button>
+<button class="btn btn-secondary" data-cal="transition">앉기↔서기 5회</button>
+</div>
+<div class="progress"><div id="calProgress"></div></div>
+<p class="hint" id="calStatus">캘리브레이션 대기</p>
+<div class="divider"></div>
+<ul class="list">
+<li><strong>Noise profile</strong><span id="noiseStatus">미완료</span></li>
+<li><strong>Seated template</strong><span id="seatedCalStatus">미완료</span></li>
+<li><strong>Standing template</strong><span id="standingCalStatus">미완료</span></li>
+<li><strong>Lying template</strong><span id="lyingCalStatus">미완료</span></li>
+<li><strong>Walking profile</strong><span id="walkingCalStatus">미완료</span></li>
+<li><strong>Transition profile</strong><span id="transitionCalStatus">미완료</span></li>
+</ul>
+<div class="divider"></div>
+<div class="cal-quality" id="calQualityText">반복 보정 결과가 여기에 표시됩니다.</div>
+<button class="btn btn-danger" id="clearCalBtn" style="width:100%;margin-top:10px">캘리브레이션 초기화</button>
+</div><h2 class="section-title">알고리즘 작동 원리</h2><div class="card">
+<span class="tag">gravity projection</span><span class="tag">adaptive threshold</span><span class="tag">template angle</span><span class="tag">FSM smoothing</span><span class="tag">abstention</span>
+<p class="hint">정적 자세는 개인별 gravity-vector template의 각거리(angle distance)를 사용하고, 보행은 동적 특징과 수직가속도 peak rate를 사용합니다. 낮은 신뢰도에서는 기존 상태를 유지하거나 UNKNOWN으로 보류합니다.</p>
+<div class="warnbox">손에 든 스마트폰은 정지 상태에서 앉기와 서기를 안정적으로 구분하기 어렵습니다. 이 모드는 walking/transition 중심으로 제한하고 정적 자세는 낮은 신뢰도로 처리합니다.</div>
+</div><h2 class="section-title">실제 테스트</h2><h2 class="section-title">실제 테스트 · Pilot Validation</h2><div class="card soft-card">
+<div class="mini">현재 상태 분류 검증</div>
+<div class="stat-row" style="margin-top:10px">
+<div class="stat-chip"><strong id="validationN">0</strong><span>라벨 샘플</span></div>
+<div class="stat-chip"><strong id="validationAcc">-</strong><span>상태 정확도</span></div>
+<div class="stat-chip"><strong id="transitionTrialScore">-</strong><span>전환 trial 적중</span></div>
+</div>
+<p class="hint">실제 자세를 취한 상태에서 아래의 정답 라벨을 눌러 현재 IMU 예측과 비교합니다. 최소 사용자 3~5명, 위치별 pocket/hand를 분리해 기록하는 것을 권장합니다.</p>
+<div class="test-actions">
+<button class="btn btn-secondary" data-truth="앉기">정답: 앉기</button>
+<button class="btn btn-secondary" data-truth="서기">정답: 서기</button>
+<button class="btn btn-secondary" data-truth="눕기">정답: 눕기</button>
+<button class="btn btn-secondary" data-truth="보행">정답: 보행</button>
+</div>
+</div><h2 class="section-title">전환 검증</h2><div class="card">
+<p class="hint">버튼을 누른 뒤 8초 안에 해당 동작을 수행합니다. 유효 trial은 전환 카운트 증가가 있어야 적중, 제외 trial은 카운트가 증가하지 않아야 적중입니다.</p>
+<div class="test-actions">
+<button class="btn btn-primary" id="validTransitionTrialBtn">유효 전환 trial 시작</button>
+<button class="btn btn-ghost" id="excludedTransitionTrialBtn">제외 전환 trial 시작</button>
+</div>
+<div class="progress"><div id="transitionTrialProgress"></div></div>
+<p class="hint" id="transitionTrialStatus">대기 중</p>
+</div><h2 class="section-title">Confusion Matrix</h2><div class="card matrix-wrap"><table class="matrix" id="confusionMatrixTable"></table></div><div class="row" style="margin-top:12px"><button class="btn btn-secondary" id="exportValidationBtn">검증 CSV 내보내기</button><button class="btn btn-danger" id="clearValidationBtn">검증 기록 초기화</button></div><h2 class="section-title">센서 진단</h2><h2 class="section-title">실시간 IMU 파형</h2><div class="card">
+<div class="mini">최근 10초 · 실제 센서 샘플</div>
+<div class="chart-wrap"><canvas height="420" id="rawChart" width="900"></canvas></div>
+<div class="chart-legend"><span><span class="legend-dot" style="background:#4f6df5"></span>linear |a|</span><span><span class="legend-dot" style="background:#18a874"></span>vertical a</span><span><span class="legend-dot" style="background:#e85d75"></span>gyro / 50</span></div>
+<div class="toolbar"><button class="btn btn-ghost smallbtn" id="freezeChartBtn">그래프 일시정지</button><button class="btn btn-secondary smallbtn" id="exportCsvBtn">CSV 내보내기</button></div>
+<div class="debug-note">그래프는 장치별 noise floor, 움직임 onset, 보행 주기, transition impulse를 직접 확인하기 위한 디버깅 도구입니다.</div>
+</div><h2 class="section-title">Feature / Threshold 진단</h2><div class="card">
+<div class="chart-wrap"><canvas height="420" id="featureChart" width="900"></canvas></div>
+<div class="chart-legend"><span><span class="legend-dot" style="background:#4f6df5"></span>lin RMS</span><span><span class="legend-dot" style="background:#f39c12"></span>move RMS threshold</span><span><span class="legend-dot" style="background:#18a874"></span>still RMS threshold</span></div>
+<div class="divider"></div>
+<div class="kv"><span>분류 상태</span><strong id="debugActivity">대기</strong></div>
+<div class="kv"><span>Raw / Confidence</span><strong id="debugRaw">대기</strong></div>
+<div class="kv"><span>정지→움직임</span><strong id="debugTransition">대기</strong></div>
+<div class="kv"><span>현재 adaptive move RMS</span><strong id="debugMoveRms">0.350</strong></div>
+<div class="kv"><span>보행 RMS threshold</span><strong id="debugWalkRms">0.480</strong></div>
+<div class="kv"><span>전환 impulse threshold</span><strong id="debugImpulse">0.090</strong></div>
+</div><h2 class="section-title">보정 진단</h2><div class="card">
+<div class="formula" id="debugCalibration">캘리브레이션 전</div>
+<div class="notice" style="margin-top:10px">Threshold는 seed 값으로 시작하고, noise / walking / transition calibration 결과가 충분할 때만 데이터 기반 값으로 갱신됩니다. 실제 배포 전에는 사용자별 confusion matrix와 오탐률 검증이 필요합니다.</div>
+</div></section>
+<section class="screen" id="screen-sleep">
+<h2 class="section-title">오늘 밤 수면 기록</h2>
+<div class="card soft-card">
+<div class="mini">낮의 행동과 밤의 수면을 함께 기록합니다.</div>
+<div class="row" style="margin-top:12px">
+<div class="form-group"><label>취침 시간</label><input id="sleepBedtime" type="time" value="00:30"/></div>
+<div class="form-group"><label>기상 시간</label><input id="sleepWakeTime" type="time" value="07:30"/></div>
+</div>
+<div class="form-group"><label>수면 만족도 <span class="num" id="sleepQualityVal">3</span></label><input id="sleepQuality" max="5" min="1" type="range" value="3"/></div>
+<div class="form-group"><label>기상 후 개운함 <span class="num" id="sleepRefreshVal">3</span></label><input id="sleepRefresh" max="5" min="1" type="range" value="3"/></div>
+<div class="form-group"><label>메모</label><textarea id="sleepNote" placeholder="잠들기 어려웠는지, 중간에 깼는지, 오늘 컨디션을 간단히 기록하세요."></textarea></div>
+<button class="btn btn-primary" id="saveSleepLogBtn">수면 기록 저장</button>
+<p class="hint" id="sleepLogStatus">저장된 수면 기록 0건</p>
+</div>
+<h2 class="section-title">최근 기록</h2>
+<div class="card"><div class="log" id="sleepLogList">아직 수면 기록이 없습니다.</div></div>
+<h2 class="section-title">앱 사용 후기 · 순응도 설문</h2><div class="card">
+<div class="survey-grid">
+<div class="form-group"><label>사용 만족도</label><select id="fbSatisfaction"><option>1</option><option>2</option><option selected="">3</option><option>4</option><option>5</option></select></div>
+<div class="form-group"><label>판정 신뢰도</label><select id="fbAccuracy"><option>1</option><option>2</option><option selected="">3</option><option>4</option><option>5</option></select></div>
+<div class="form-group"><label>사용 부담감</label><select id="fbBurden"><option>1</option><option>2</option><option selected="">3</option><option>4</option><option>5</option></select></div>
+<div class="form-group"><label>재사용 의향</label><select id="fbReuse"><option>1</option><option>2</option><option selected="">3</option><option>4</option><option>5</option></select></div>
+</div>
+<div class="form-group"><label>앱 사용 후기</label><textarea id="fbComment" placeholder="불편했던 점, 도움이 된 기능, 경쟁 요소에 대한 의견을 적어주세요."></textarea></div>
+<button class="btn btn-primary" id="saveFeedbackBtn">피드백 저장</button>
+<p class="hint" id="feedbackStatus">저장된 응답 0건 · 브라우저 localStorage에 보관됩니다.</p>
+</div></section></main>
+<nav aria-label="하단 탭" class="bottom-nav"><button class="nav-btn active" data-screen="home">홈</button><button class="nav-btn" data-screen="score">점수</button><button class="nav-btn" data-screen="routine">루틴</button><button class="nav-btn" data-screen="detect">감지</button><button class="nav-btn" data-screen="sleep">수면</button></nav>
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const STORAGE_KEY = 'day2sleep_ux_v3_bls_community';
+const ACT = Object.freeze({SEATED:'앉기', STANDING:'서기', LYING:'눕기', WALKING:'보행', UNKNOWN:'판정 보류'});
+const PHONE_LABEL = {pocket:'주머니/몸 밀착', hand:'손에 들고 있음', desk:'책상 위'};
+const DEMO_TEMPLATES = {
+  seated:{g:{x:0.02,y:0.66,z:0.75}},
+  standing:{g:{x:0.02,y:0.10,z:0.995}},
+  lying:{g:{x:0.95,y:0.05,z:0.30}}
+};
+const MODE = {
+  field:{sedentaryBout:3600, validBreak:120, validBreakContinuous:90, routineWindow:600, standNonSed:120, standContinuous:90, walkRequired:120, walkContinuous:60, mobilityMove:60, mobilityRot:20},
+  demo:{sedentaryBout:20, validBreak:8, validBreakContinuous:6, routineWindow:90, standNonSed:8, standContinuous:6, walkRequired:8, walkContinuous:5, mobilityMove:8, mobilityRot:3}
+};
+const BLS_FORMULA = Object.freeze({WS:.6,WF:.4,w1:.4,w2:.4,w3:.2,sedRatioRef:.7652,boutRefSec:10800,transitionIntervalMin:25,demoBoutRefSec:30,demoTransitionIntervalSec:10});
+const clamp = (x,a=0,b=1) => Math.min(b,Math.max(a,x));
+const mean = a => a.length ? a.reduce((s,v)=>s+v,0)/a.length : 0;
+const std = a => {if(a.length<2)return 0;const m=mean(a);return Math.sqrt(mean(a.map(v=>(v-m)**2)))};
+const rms = a => a.length ? Math.sqrt(mean(a.map(v=>v*v))) : 0;
+const percentile = (a,p) => {if(!a.length)return 0;const s=[...a].sort((x,y)=>x-y);const i=Math.min(s.length-1,Math.max(0,Math.floor((s.length-1)*p)));return s[i]};
+const formatTime = seconds => {seconds=Math.max(0,Math.round(seconds));if(seconds<60)return seconds+'초';const h=Math.floor(seconds/3600),m=Math.floor((seconds%3600)/60),s=seconds%60;if(h)return `${h}시간 ${m}분`;return s?`${m}분 ${s}초`:`${m}분`};
+const vecNorm = v => Math.sqrt(v.x*v.x+v.y*v.y+v.z*v.z)||1;
+const normalize = v => {const n=vecNorm(v);return{x:v.x/n,y:v.y/n,z:v.z/n}};
+const angleDeg = (a,b) => Math.acos(clamp(a.x*b.x+a.y*b.y+a.z*b.z,-1,1))*180/Math.PI;
+
+function defaultState(){return{
+  operationMode:'field', phoneMode:'pocket', sensorStarted:false,
+  currentActivity:ACT.UNKNOWN, rawActivity:ACT.UNKNOWN, confidence:{score:0,reason:'센서 시작 전'},
+  monitoredSeconds:0, sedentarySeconds:0, currentSedentaryBout:0, longestSedentaryBout:0, boutCount:0, currentBoutCounted:false,
+  breakCount:0, pendingBreakSeconds:0, pendingBreakContinuous:0,
+  activitySeconds:{[ACT.SEATED]:0,[ACT.STANDING]:0,[ACT.LYING]:0,[ACT.WALKING]:0,[ACT.UNKNOWN]:0},
+  transitionCount:0, eligibleTransitionCount:0, eligibleTransitionLog:[], movementStartCount:0, dynamicActiveSeconds:0, movementIntensitySum:0, movementIntensityN:0,
+  awakeHours:16, sNorm:0, fNorm:0, sActivity:100, sParts:{ratio:0,bout:0,activity:1,targetTransitions:38.4,sedRatio:0,reliability:0},
+  bodyLoad:0, blParts:{objective:0,subjective:0}, survey:{neck:3,back:3,fatigue:4},
+  calibration:{noise:{ready:false,linRms:0.05,linP95:0.08,jerk:0.03,jerkP95:0.08,rot:4,rotP95:8},postures:{seated:null,standing:null,lying:null},walking:{ready:false,trials:[]},transition:{ready:false,trials:[]}},
+  routine:{active:false,type:'stand_break',startedAt:0,elapsed:0,nonSed:0,walking:0,moving:0,rotationActive:0,continuousNonSed:0,continuousWalking:0,onsetEvidence:false,evidenceScore:0,baselineActivity:'판정 보류',result:'대기',manual:false,outcomeRecorded:false},
+  adherence:{attempts:0,verified:0,manual:0,failed:0},
+  validation:{samples:[],transitionTrials:[]},
+  community:{nickname:'도윤'}, feedback:[],
+  logs:[], routineLogs:[]
+}}
+function mergeState(base,saved){
+  const out={...base,...saved};
+  out.activitySeconds={...base.activitySeconds,...(saved.activitySeconds||{})};out.sParts={...base.sParts,...(saved.sParts||{})};out.blParts={...base.blParts,...(saved.blParts||{})};out.survey={...base.survey,...(saved.survey||{})};out.adherence={...base.adherence,...(saved.adherence||{})};out.validation={...base.validation,...(saved.validation||{})};if(!Array.isArray(out.validation.samples))out.validation.samples=[];if(!Array.isArray(out.validation.transitionTrials))out.validation.transitionTrials=[];out.community={...base.community,...(saved.community||{})};if(!Array.isArray(out.feedback))out.feedback=[];if(!Array.isArray(out.eligibleTransitionLog))out.eligibleTransitionLog=[];
+  out.calibration={...base.calibration,...(saved.calibration||{})};out.calibration.noise={...base.calibration.noise,...(saved.calibration?.noise||{})};out.calibration.postures={...base.calibration.postures,...(saved.calibration?.postures||{})};out.calibration.walking={...base.calibration.walking,...(saved.calibration?.walking||{})};out.calibration.transition={...base.calibration.transition,...(saved.calibration?.transition||{})};if(!Array.isArray(out.calibration.walking.trials))out.calibration.walking.trials=[];if(!Array.isArray(out.calibration.transition.trials))out.calibration.transition.trials=[];
+  out.routine={...base.routine,...(saved.routine||{})};if(!Array.isArray(out.logs))out.logs=[];if(!Array.isArray(out.routineLogs))out.routineLogs=[];return out;
+}
+function loadState(){try{return mergeState(defaultState(),JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}'))}catch(_){return defaultState()}}
+const state=loadState();
+function saveState(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}catch(_){/* sandbox/private mode fallback */}}
+function addLog(text,routine=false){const time=new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});const line=`[${time}] ${text}`;const key=routine?'routineLogs':'logs';state[key].unshift(line);state[key]=state[key].slice(0,40)}
+
+let sensorRunning=false, motionWindow=[], gravity={x:0,y:0,z:9.81,ready:false}, lastSampleTime=0, lastAnalysisAt=0;
+let predictionQueue=[], transitionGate={preStill:0,stillStreak:0,inMotion:false,cooldownUntil:0,last:'대기'};
+let directionalCandidate={type:null,startedAt:0,strength:0,settle:0};
+let lastFeatures={linRms:0,linMean:0,linStd:0,jerkMean:0,rotMean:0,rotStd:0,verticalRms:0,stepRate:0,dynamicScore:0,g:{x:0,y:0,z:1},n:0};
+let lastRaw={label:ACT.UNKNOWN,confidence:0,reason:'대기'}, lastMotionTransition='대기', lastDirectional='없음';
+let calJob=null, demoTimer=null, demoPhase=0, chartFrozen=false, lastMotionStartAt=0, transitionTrialTimer=null;
+let featureHistory=[], sessionRows=[];
+const MAX_SESSION_ROWS=36000, MAX_FEATURE_HISTORY=240;
+
+function profile(){return MODE[state.operationMode]||MODE.field}
+function adaptiveThresholds(){
+  const n=state.calibration.noise,w=state.calibration.walking,tr=state.calibration.transition;
+  const noise95=Math.max(n.linP95||0,n.linRms*1.8,0.06);
+  let moveRms=Math.max(0.35,n.linRms*6), moveJerk=Math.max(0.18,n.jerk*5), moveRot=Math.max(18,n.rot*4);
+  let walkRms=Math.max(0.48,n.linRms*7), walkJerk=Math.max(0.16,n.jerk*4.5);
+  if(w.ready&&w.trials?.length){
+    const wr=w.linRmsP20||walkRms, wj=w.jerkP20||walkJerk, wg=w.rotP20||moveRot*1.5;
+    moveRms=clamp(noise95+.28*Math.max(0,wr-noise95),.25,1.5);
+    moveJerk=clamp((n.jerkP95||n.jerk*2)+.22*Math.max(0,wj-(n.jerkP95||n.jerk*2)),.12,4);
+    moveRot=clamp((n.rotP95||n.rot*2)+.22*Math.max(0,wg-(n.rotP95||n.rot*2)),12,120);
+    walkRms=clamp(wr*.82,.35,2.5);walkJerk=clamp(wj*.78,.12,8);
+  }
+  let impulse=Math.max(0.09,n.linRms*1.8),peak=Math.max(0.42,n.linRms*7);
+  if(tr.ready&&tr.trials?.length){impulse=clamp((tr.impulseP20||impulse)*.72,.05,.8);peak=clamp((tr.peakP20||peak)*.72,.25,3)}
+  return{stillRms:Math.max(0.12,noise95*1.35),stillRot:Math.max(12,(n.rotP95||n.rot*2)*1.3),moveRms,moveJerk,moveRot,walkRms,walkJerk,impulse,peak,settleRms:Math.max(0.20,noise95*2.2)}
+}
+
+function updateGravity(incl,linear){
+  if(linear){const gx=incl.x-linear.x,gy=incl.y-linear.y,gz=incl.z-linear.z;if(Number.isFinite(gx+gy+gz)){gravity={x:gx,y:gy,z:gz,ready:true};return}}
+  const alpha=gravity.ready?0.94:0;gravity.x=alpha*gravity.x+(1-alpha)*incl.x;gravity.y=alpha*gravity.y+(1-alpha)*incl.y;gravity.z=alpha*gravity.z+(1-alpha)*incl.z;gravity.ready=true;
+}
+function addMotionSample(accIncl,rot,accLinear){
+  const now=Date.now();
+  const incl={x:Number(accIncl?.x||0),y:Number(accIncl?.y||0),z:Number(accIncl?.z||9.81)};
+  const linear=accLinear&&[accLinear.x,accLinear.y,accLinear.z].every(v=>Number.isFinite(Number(v)))?{x:Number(accLinear.x||0),y:Number(accLinear.y||0),z:Number(accLinear.z||0)}:null;
+  updateGravity(incl,linear);const gMag=Math.max(.1,vecNorm(gravity));const gu={x:gravity.x/gMag,y:gravity.y/gMag,z:gravity.z/gMag};
+  const lin=linear||{x:incl.x-gravity.x,y:incl.y-gravity.y,z:incl.z-gravity.z};const verticalSigned=lin.x*gu.x+lin.y*gu.y+lin.z*gu.z;const verticalUp=-verticalSigned;
+  const rx=Number(rot?.alpha||0),ry=Number(rot?.beta||0),rz=Number(rot?.gamma||0);const rotation=Math.sqrt(rx*rx+ry*ry+rz*rz);
+  const linMag=Math.sqrt(lin.x**2+lin.y**2+lin.z**2);const prev=motionWindow[motionWindow.length-1];const dt=Math.min(.15,Math.max(.008,lastSampleTime?(now-lastSampleTime)/1000:.02));lastSampleTime=now;const jerk=prev?Math.abs(linMag-prev.linMag)/Math.max(.01,dt):0;
+  const sample={t:now,dt,linMag,verticalUp,rotation,jerk,lx:lin.x,ly:lin.y,lz:lin.z,rx,ry,rz,gx:gu.x,gy:gu.y,gz:gu.z};
+  motionWindow.push(sample);motionWindow=motionWindow.filter(v=>v.t>=now-10000).slice(-600);
+  sessionRows.push({...sample,activity:state.currentActivity,rawActivity:state.rawActivity,confidence:state.confidence.score});if(sessionRows.length>MAX_SESSION_ROWS)sessionRows=sessionRows.slice(-MAX_SESSION_ROWS);
+}
+function samplesSince(ms){const c=Date.now()-ms;return motionWindow.filter(v=>v.t>=c)}
+function countVerticalPeaks(samples,threshold){let c=0,lastPeakT=0;for(let i=1;i<samples.length-1;i++){const v=samples[i];if(v.verticalUp>threshold&&v.verticalUp>samples[i-1].verticalUp&&v.verticalUp>=samples[i+1].verticalUp&&v.t-lastPeakT>260){c++;lastPeakT=v.t}}return c}
+function extractFeatures(ms=2000){
+  const s=samplesSince(ms);if(s.length<8)return{...lastFeatures,n:s.length};
+  const lin=s.map(v=>v.linMag),jerk=s.map(v=>v.jerk),rot=s.map(v=>v.rotation),vert=s.map(v=>v.verticalUp);
+  const g=normalize({x:mean(s.map(v=>v.gx)),y:mean(s.map(v=>v.gy)),z:mean(s.map(v=>v.gz))});const peakCount=countVerticalPeaks(s,Math.max(.22,percentile(vert.map(Math.abs),.70)));const dur=Math.max(.5,(s[s.length-1].t-s[0].t)/1000);
+  const f={n:s.length,linMean:mean(lin),linStd:std(lin),linRms:rms(lin),linP95:percentile(lin,.95),jerkMean:mean(jerk),rotMean:mean(rot),rotStd:std(rot),verticalRms:rms(vert),stepRate:(peakCount/dur)*60,g};
+  const th=adaptiveThresholds();f.dynamicScore=clamp(.45*(f.linRms/th.moveRms)+.25*(f.jerkMean/th.moveJerk)+.30*(f.rotMean/th.moveRot),0,3);return f;
+}
+function integrateImpulse(samples,sign){let total=0;for(const v of samples){const a=sign*v.verticalUp-.08;if(a>0)total+=a*(v.dt||.02)}return total}
+
+function detectMotionTransition(f,dt){
+  const th=adaptiveThresholds();const still=f.linRms<th.stillRms&&f.rotMean<th.stillRot;const moving=f.linRms>th.moveRms||f.jerkMean>th.moveJerk||f.rotMean>th.moveRot;
+  const wasReady=transitionGate.preStill>=1.0;
+  if(still){transitionGate.preStill=Math.min(3,transitionGate.preStill+dt);transitionGate.stillStreak+=dt}else{transitionGate.stillStreak=0}
+  let event='없음';const now=Date.now();
+  if(moving&&wasReady&&!transitionGate.inMotion&&now>=transitionGate.cooldownUntil){event='정지→움직임';transitionGate.inMotion=true;transitionGate.preStill=0;transitionGate.cooldownUntil=now+2000;state.movementStartCount+=1;lastMotionStartAt=now;addLog('정지→움직임 onset 감지')}
+  if(transitionGate.inMotion&&transitionGate.stillStreak>=1.2){event='움직임→정지';transitionGate.inMotion=false;transitionGate.preStill=Math.max(1,transitionGate.preStill);addLog('움직임→정지 전이 감지')}
+  transitionGate.last=event==='없음'?(still?'정지 유지':moving?'움직임 유지':'중간 상태'):event;return event;
+}
+function detectDirectionalTransition(f,dt){
+  const th=adaptiveThresholds(),now=Date.now(),s=samplesSince(750);if(s.length<8)return'없음';
+  const pos=integrateImpulse(s,1),neg=integrateImpulse(s,-1),maxPos=Math.max(...s.map(v=>v.verticalUp)),maxNeg=Math.max(...s.map(v=>-v.verticalUp));
+  let target=null,strength=0;if(pos>th.impulse&&maxPos>th.peak&&pos>neg*1.18){target='UP';strength=pos}else if(neg>th.impulse&&maxNeg>th.peak&&neg>pos*1.18){target='DOWN';strength=neg}
+  if(target&&directionalCandidate.type!==target){directionalCandidate={type:target,startedAt:now,strength,settle:0}}
+  if(directionalCandidate.type){const age=now-directionalCandidate.startedAt;const stable=f.linRms<th.settleRms&&f.rotMean<Math.max(30,th.stillRot*2);directionalCandidate.settle=stable?directionalCandidate.settle+dt:Math.max(0,directionalCandidate.settle-dt*.4);if(directionalCandidate.settle>=.55){const out=directionalCandidate.type;directionalCandidate={type:null,startedAt:0,strength:0,settle:0};addLog(`방향 전이 ${out} 확정`);return out}if(age>2200)directionalCandidate={type:null,startedAt:0,strength:0,settle:0}}
+  return'없음';
+}
+
+function classifyStaticByTemplate(f){
+  const p=state.calibration.postures;const entries=[['seated',ACT.SEATED],['standing',ACT.STANDING],['lying',ACT.LYING]].filter(([k])=>p[k]?.g);
+  if(!entries.length)return null;const distances=entries.map(([k,label])=>({key:k,label,d:angleDeg(f.g,p[k].g),disp:p[k].dispersionDeg||0,trials:p[k].trials?.length||1})).sort((a,b)=>a.d-b.d);const best=distances[0],second=distances[1]||{d:90};const margin=second.d-best.d;
+  const geometryConf=clamp(1-best.d/45,0,1)*.7+clamp(margin/25,0,1)*.3;const trialFactor=clamp(.55+.15*Math.min(3,best.trials),.55,1);const dispersionPenalty=clamp(1-best.disp/25,.55,1);const conf=geometryConf*trialFactor*dispersionPenalty;
+  if(best.d>38||conf<.42)return{label:ACT.UNKNOWN,confidence:conf,reason:`template ${best.d.toFixed(1)}° · trials ${best.trials}`};return{label:best.label,confidence:conf,reason:`template ${best.d.toFixed(1)}° / margin ${margin.toFixed(1)}° / n=${best.trials}`};
+}
+function classifyActivity(f,directional){
+  const th=adaptiveThresholds();
+  if(state.phoneMode==='desk')return{label:ACT.UNKNOWN,confidence:.1,reason:'desk placement: 자동 판정 보류'};
+  const walkEvidence=f.linRms>th.walkRms&&f.jerkMean>th.walkJerk&&f.stepRate>=50&&f.stepRate<=210;
+  if(walkEvidence){const c=clamp(.35*(f.linRms/th.walkRms-1)+.25*(f.jerkMean/th.walkJerk-1)+.4*(1-Math.abs(f.stepRate-110)/110),.45,.97);return{label:ACT.WALKING,confidence:c,reason:`dynamic gait · ${Math.round(f.stepRate)} bpm`}}
+  const staticLike=f.linRms<th.stillRms*1.7&&f.rotMean<th.stillRot*1.8;
+  if(state.phoneMode==='hand'){
+    if(!staticLike)return{label:ACT.UNKNOWN,confidence:.35,reason:'hand mode: 움직임은 감지했지만 자세 판정 보류'};
+    if(directional==='UP')return{label:ACT.STANDING,confidence:.68,reason:'hand mode + UP transition'};
+    if(directional==='DOWN')return{label:ACT.SEATED,confidence:.62,reason:'hand mode + DOWN transition'};
+    return{label:state.currentActivity===ACT.WALKING?ACT.UNKNOWN:state.currentActivity,confidence:.38,reason:'hand mode static: 기존 상태 유지'};
+  }
+  if(staticLike){const t=classifyStaticByTemplate(f);if(t)return t;if(directional==='UP')return{label:ACT.STANDING,confidence:.75,reason:'UP transition fallback'};if(directional==='DOWN')return{label:ACT.SEATED,confidence:.72,reason:'DOWN transition fallback'};return{label:state.currentActivity!==ACT.UNKNOWN&&state.currentActivity!==ACT.WALKING?state.currentActivity:ACT.UNKNOWN,confidence:.32,reason:'posture calibration 필요'}}
+  return{label:ACT.UNKNOWN,confidence:.28,reason:'비보행 동적 구간: 판정 보류'};
+}
+function smoothPrediction(raw){
+  predictionQueue.push(raw);predictionQueue=predictionQueue.slice(-5);const valid=predictionQueue.filter(p=>p.label!==ACT.UNKNOWN&&p.confidence>=.40);if(!valid.length)return{label:ACT.UNKNOWN,confidence:0,reason:'유효 prediction 없음'};
+  const labels=[ACT.SEATED,ACT.STANDING,ACT.LYING,ACT.WALKING];const ranked=labels.map(label=>{const items=valid.filter(p=>p.label===label);return{label,count:items.length,conf:items.length?mean(items.map(p=>p.confidence)):0}}).sort((a,b)=>b.count-a.count||b.conf-a.conf);const best=ranked[0];
+  const need=best.label===ACT.WALKING?2:3;if(best.count>=need&&best.conf>=.48)return{label:best.label,confidence:best.conf,reason:`${best.count}/5 temporal vote`};
+  return{label:state.currentActivity,confidence:Math.min(.55,best.conf),reason:`smoothing 대기 ${best.count}/${need}`};
+}
+function applyActivity(next,confidence,reason,dt){
+  const prev=state.currentActivity;if(next&&next!==ACT.UNKNOWN&&next!==prev){
+    state.currentActivity=next;state.transitionCount+=1;addLog(`상태 전환: ${prev} → ${next}`);
+    const eligible=prev===ACT.SEATED&&(next===ACT.STANDING||next===ACT.WALKING);
+    const onsetLinked=(Date.now()-lastMotionStartAt)<=5000;
+    if(eligible&&onsetLinked){state.eligibleTransitionCount+=1;state.eligibleTransitionLog.unshift({t:new Date().toISOString(),from:prev,to:next});state.eligibleTransitionLog=state.eligibleTransitionLog.slice(0,200);addLog(`실제 전환 +1: ${prev} → ${next} · onset 연계`)}
+    else if(eligible&&!onsetLinked){addLog(`전환 후보 미집계: ${prev} → ${next} · 정지→움직임 onset 미연계`)}
+    else{addLog(`점수 전환 제외: ${prev} → ${next}`)}
+  }
+  state.confidence={score:Math.round(clamp(confidence,0,1)*100),reason};
+  const cur=state.currentActivity||ACT.UNKNOWN;state.monitoredSeconds+=dt;state.activitySeconds[cur]=(state.activitySeconds[cur]||0)+dt;
+  const isSed=cur===ACT.SEATED;
+  if(isSed){state.sedentarySeconds+=dt;state.currentSedentaryBout+=dt;state.longestSedentaryBout=Math.max(state.longestSedentaryBout,state.currentSedentaryBout);state.pendingBreakSeconds=0;state.pendingBreakContinuous=0;const p=profile();if(state.currentSedentaryBout>=p.sedentaryBout&&!state.currentBoutCounted){state.boutCount+=1;state.currentBoutCounted=true;addLog(`Sedentary bout ${state.boutCount}회 기록`)}}
+  else if(state.currentSedentaryBout>0){
+    const p=profile();state.pendingBreakSeconds+=dt;state.pendingBreakContinuous+=dt;
+    if(state.pendingBreakSeconds>=p.validBreak&&state.pendingBreakContinuous>=p.validBreakContinuous){state.breakCount+=1;state.currentSedentaryBout=0;state.currentBoutCounted=false;state.pendingBreakSeconds=0;state.pendingBreakContinuous=0;addLog(`유효 좌식 중단 ${state.breakCount}회 확정`)}
+  }
+}
+
+function computeOfficialScores(readSurvey=false){
+  if(readSurvey&&$('neckPain'))state.survey={neck:Number($('neckPain').value),back:Number($('backPain').value),fatigue:Number($('fatigue').value)};
+  if($('awakeHours'))state.awakeHours=Number($('awakeHours').value)||state.awakeHours||16;
+  const validObserved=Math.max(1,Object.entries(state.activitySeconds).filter(([k])=>k!==ACT.UNKNOWN).reduce((sum,[,v])=>sum+(Number(v)||0),0));
+  const sedRatio=clamp(state.sedentarySeconds/validObserved,0,1);
+  const sRatio=clamp(sedRatio/BLS_FORMULA.sedRatioRef,0,1);
+  const boutRef=state.operationMode==='demo'?BLS_FORMULA.demoBoutRefSec:BLS_FORMULA.boutRefSec;
+  const sBout=clamp(state.longestSedentaryBout/boutRef,0,1);
+  const targetTransitions=state.operationMode==='demo'?Math.max(1,state.monitoredSeconds/BLS_FORMULA.demoTransitionIntervalSec):Math.max(.1,(state.awakeHours*60)/BLS_FORMULA.transitionIntervalMin);
+  const sActivity=clamp(1-state.eligibleTransitionCount/targetTransitions,0,1);
+  const sNorm=clamp(BLS_FORMULA.w1*sRatio+BLS_FORMULA.w2*sBout+BLS_FORMULA.w3*sActivity,0,1);
+  const painMean=(state.survey.neck+state.survey.back)/2;
+  const fNorm=clamp((((painMean+state.survey.fatigue)/2)-1)/4,0,1);
+  const bodyLoad=100*(BLS_FORMULA.WS*sNorm+BLS_FORMULA.WF*fNorm);
+  state.sNorm=sNorm;state.fNorm=fNorm;state.sActivity=Math.round(sActivity*100);
+  state.sParts={ratio:sRatio,bout:sBout,activity:sActivity,targetTransitions,sedRatio,reliability:clamp(state.monitoredSeconds/(state.operationMode==='field'?1800:60),0,1)};
+  state.blParts={objective:100*BLS_FORMULA.WS*sNorm,subjective:100*BLS_FORMULA.WF*fNorm};state.bodyLoad=Math.round(clamp(bodyLoad,0,100));
+  return state.bodyLoad;
+}
+function computeSActivity(){computeOfficialScores(false);return state.sActivity}
+function computeBodyLoad(){computeOfficialScores(true);addLog(`BLS ${state.bodyLoad}점 계산 · S_norm ${state.sNorm.toFixed(3)} · F_norm ${state.fNorm.toFixed(3)}`);saveState();render()}
+
+function routineSpec(){const p=profile(),t=state.routine.type;if(t==='walk_break')return{title:'짧은 걷기',desc:`${state.operationMode==='field'?'Field':'Demo'}: 보행 누적 ${p.walkRequired}초 + 연속 ${p.walkContinuous}초를 함께 확인.`,denom:p.walkRequired};if(t==='mobility')return{title:'스트레칭/모빌리티 proxy',desc:`움직임 ${p.mobilityMove}초 + 회전 활성 ${p.mobilityRot}초 + movement onset evidence를 조합해 probable compliance를 계산.`,denom:p.mobilityMove};return{title:'기립 휴식',desc:`${state.operationMode==='field'?'Field':'Demo'}: 비좌식 누적 ${p.standNonSed}초 + 연속 ${p.standContinuous}초 + 시작 상태/전이 근거를 확인.`,denom:p.standNonSed}}
+function resetRoutineCounters(){state.routine={active:false,type:$('routineType')?.value||state.routine.type||'stand_break',startedAt:0,elapsed:0,nonSed:0,walking:0,moving:0,rotationActive:0,continuousNonSed:0,continuousWalking:0,onsetEvidence:false,evidenceScore:0,baselineActivity:state.currentActivity,result:'대기',manual:false,outcomeRecorded:false}}
+function startRoutine(){resetRoutineCounters();state.routine.active=true;state.routine.startedAt=Date.now();state.routine.result='측정 중';state.adherence.attempts+=1;addLog(`루틴 검증 시작: ${routineSpec().title} · baseline ${state.routine.baselineActivity}`,true);saveState();render()}
+function stopRoutine(){if(state.routine.active){state.routine.active=false;state.routine.result='중지';addLog('루틴 검증 수동 중지',true);saveState();render()}}
+function manualRoutineConfirm(){state.routine.manual=true;state.routine.active=false;state.routine.result='사용자 확인';state.routine.evidenceScore=Math.max(state.routine.evidenceScore,50);if(!state.routine.outcomeRecorded){state.adherence.manual+=1;state.routine.outcomeRecorded=true}addLog('사용자가 루틴 수행을 직접 확인함',true);saveState();render()}
+function updateRoutine(dt,f){
+  const r=state.routine;if(!r.active)return;const p=profile();r.elapsed+=dt;const nonSed=state.currentActivity!==ACT.SEATED&&state.currentActivity!==ACT.UNKNOWN;
+  if(lastMotionTransition==='정지→움직임'||lastDirectional==='UP'||lastDirectional==='DOWN')r.onsetEvidence=true;
+  if(nonSed){r.nonSed+=dt;r.continuousNonSed+=dt}else r.continuousNonSed=0;
+  if(state.currentActivity===ACT.WALKING){r.walking+=dt;r.continuousWalking+=dt}else r.continuousWalking=0;
+  if(f.dynamicScore>=1)r.moving+=dt;if(f.rotMean>adaptiveThresholds().moveRot&&f.rotMean<180)r.rotationActive+=dt;
+  let score=0,done=false,label='';
+  if(r.type==='stand_break'){const onset=(r.baselineActivity===ACT.SEATED||r.onsetEvidence)?1:0;score=100*(.40*clamp(r.nonSed/p.standNonSed)+.40*clamp(r.continuousNonSed/p.standContinuous)+.20*onset);done=score>=95&&r.nonSed>=p.standNonSed&&r.continuousNonSed>=p.standContinuous;label='센서 검증 완료'}
+  if(r.type==='walk_break'){const onset=r.onsetEvidence?1:0;score=100*(.60*clamp(r.walking/p.walkRequired)+.30*clamp(r.continuousWalking/p.walkContinuous)+.10*onset);done=score>=95&&r.walking>=p.walkRequired&&r.continuousWalking>=p.walkContinuous;label='보행 검증 완료'}
+  if(r.type==='mobility'){const onset=r.onsetEvidence?1:0;score=100*(.50*clamp(r.moving/p.mobilityMove)+.35*clamp(r.rotationActive/p.mobilityRot)+.15*onset);done=score>=90&&r.moving>=p.mobilityMove&&r.rotationActive>=p.mobilityRot;label='probable compliance'}
+  r.evidenceScore=Math.round(clamp(score/100)*100);
+  if(done){r.active=false;r.result=label;if(!r.outcomeRecorded){state.adherence.verified+=1;r.outcomeRecorded=true}addLog(`${routineSpec().title}: ${label} · evidence ${r.evidenceScore}`,true)}else if(r.elapsed>=p.routineWindow){r.active=false;r.result='시간 내 미확인';if(!r.outcomeRecorded){state.adherence.failed+=1;r.outcomeRecorded=true}addLog(`${routineSpec().title}: 시간 내 수행 근거 부족 · evidence ${r.evidenceScore}`,true)}
+}
+
+function fitCanvas(canvas){
+  const rect=canvas.getBoundingClientRect();const dpr=Math.min(2,window.devicePixelRatio||1);
+  const w=Math.max(320,Math.round(rect.width*dpr)),h=Math.max(180,Math.round(rect.height*dpr));
+  if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}
+  return{ctx:canvas.getContext('2d'),w,h,dpr};
+}
+function drawSeries(ctx,points,xFor,yFor,color,width=2,dash=[]){
+  if(points.length<2)return;ctx.save();ctx.strokeStyle=color;ctx.lineWidth=width;ctx.setLineDash(dash);ctx.beginPath();
+  points.forEach((p,i)=>{const x=xFor(p,i),y=yFor(p,i);if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.stroke();ctx.restore();
+}
+function chartScaffold(ctx,w,h,pad=34){
+  ctx.clearRect(0,0,w,h);const dark=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;
+  ctx.fillStyle=dark?'#111526':'#fbfcff';ctx.fillRect(0,0,w,h);ctx.strokeStyle=dark?'#2a3048':'#e6e8ef';ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){const y=pad+(h-2*pad)*i/4;ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(w-pad,y);ctx.stroke()}
+  return pad;
+}
+function drawDebugCharts(){
+  if(chartFrozen)return;
+  const raw=$('rawChart'),feature=$('featureChart');if(!raw||!feature)return;
+  {
+    const {ctx,w,h}=fitCanvas(raw),pad=chartScaffold(ctx,w,h),pts=samplesSince(10000);if(pts.length>1){
+      const t0=pts[0].t,t1=pts[pts.length-1].t||t0+1,x=p=>pad+(w-2*pad)*(p.t-t0)/Math.max(1,t1-t0);
+      const maxA=Math.max(1.2,percentile(pts.map(p=>Math.max(p.linMag,Math.abs(p.verticalUp))),.98));
+      const yA=v=>h/2-(h-2*pad)*.42*v/maxA;const yLin=v=>h-pad-(h-2*pad)*.78*clamp(v/maxA,0,1);
+      drawSeries(ctx,pts,x,p=>yLin(p.linMag),'#4f6df5',2);
+      drawSeries(ctx,pts,x,p=>yA(p.verticalUp),'#18a874',2);
+      drawSeries(ctx,pts,x,p=>yA(p.rotation/50),'#e85d75',2);
+    }
+  }
+  {
+    const {ctx,w,h}=fitCanvas(feature),pad=chartScaffold(ctx,w,h),pts=featureHistory.slice(-120);if(pts.length>1){
+      const t0=pts[0].t,t1=pts[pts.length-1].t||t0+1,x=p=>pad+(w-2*pad)*(p.t-t0)/Math.max(1,t1-t0);
+      const ymax=Math.max(.5,percentile(pts.flatMap(p=>[p.linRms,p.moveRms,p.stillRms]),.98)*1.2),y=v=>h-pad-(h-2*pad)*clamp(v/ymax,0,1);
+      drawSeries(ctx,pts,x,p=>y(p.linRms),'#4f6df5',2.5);
+      drawSeries(ctx,pts,x,p=>y(p.moveRms),'#f39c12',2,[8,5]);
+      drawSeries(ctx,pts,x,p=>y(p.stillRms),'#18a874',2,[6,5]);
+    }
+  }
+}
+function csvEscape(v){const s=String(v??'');return /[",\n]/.test(s)?'"'+s.replaceAll('"','""')+'"':s}
+function exportCsv(){
+  if(!sessionRows.length){addLog('CSV export 실패: 저장된 센서 샘플 없음');render();return}
+  const headers=['timestamp_ms','lin_mag','vertical_up','rotation','jerk','lin_x','lin_y','lin_z','rot_alpha','rot_beta','rot_gamma','g_x','g_y','g_z','activity','raw_activity','confidence'];
+  const rows=sessionRows.map(r=>[r.t,r.linMag,r.verticalUp,r.rotation,r.jerk,r.lx,r.ly,r.lz,r.rx,r.ry,r.rz,r.gx,r.gy,r.gz,r.activity,r.rawActivity,r.confidence].map(csvEscape).join(','));
+  const blob=new Blob([[headers.join(','),...rows].join('\n')],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');
+  const stamp=new Date().toISOString().replaceAll(':','-').slice(0,19);a.href=url;a.download=`day2sleep_imu_${stamp}.csv`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);addLog(`CSV export: ${sessionRows.length} samples`);render();
+}
+function calibrationQualityText(){
+  const p=state.calibration.postures;const postureText=['seated','standing','lying'].map(k=>{const e=p[k];return e?`${k}: n=${e.trials?.length||1}, dispersion=${(e.dispersionDeg||0).toFixed(1)}°`:`${k}: 미완료`}).join(' · ');
+  const w=state.calibration.walking,t=state.calibration.transition;
+  return `${postureText}\nwalking: ${w.ready?`${w.trials.length} trial, step≈${Math.round(w.stepRateMedian||0)} bpm`:'미완료'}\ntransition: ${t.ready?`${t.trials.length} trial, impulse=${(t.impulseP20||0).toFixed(3)}, peak=${(t.peakP20||0).toFixed(2)}`:'미완료'}`;
+}
+function analysisTick(){
+  const now=Date.now(),dt=Math.min(.7,Math.max(.15,lastAnalysisAt?(now-lastAnalysisAt)/1000:.4));lastAnalysisAt=now;const f=extractFeatures(2000);lastFeatures=f;if(f.n<8){render();drawDebugCharts();return}
+  lastMotionTransition=detectMotionTransition(f,dt);lastDirectional=detectDirectionalTransition(f,dt);lastRaw=classifyActivity(f,lastDirectional);state.rawActivity=lastRaw.label;const smooth=smoothPrediction(lastRaw);applyActivity(smooth.label,smooth.confidence,smooth.reason,dt);
+  if(f.dynamicScore>=1||state.currentActivity===ACT.WALKING)state.dynamicActiveSeconds+=dt;state.movementIntensitySum+=f.dynamicScore;state.movementIntensityN+=1;computeOfficialScores(false);updateRoutine(dt,f);
+  const th=adaptiveThresholds();featureHistory.push({t:now,linRms:f.linRms,moveRms:th.moveRms,stillRms:th.stillRms,jerk:f.jerkMean,rot:f.rotMean,activity:state.currentActivity});if(featureHistory.length>MAX_FEATURE_HISTORY)featureHistory=featureHistory.slice(-MAX_FEATURE_HISTORY);
+  saveState();render();drawDebugCharts();
+}
+async function startSensor(){
+  if(sensorRunning){addLog('IMU 센서는 이미 작동 중');render();return}
+  try{
+    if(typeof DeviceMotionEvent!=='undefined'&&typeof DeviceMotionEvent.requestPermission==='function'){
+      const p=await DeviceMotionEvent.requestPermission();if(p!=='granted')throw new Error('센서 권한이 거부되었습니다.')
+    }
+    window.addEventListener('devicemotion',onMotion,{passive:true});sensorRunning=true;state.sensorStarted=true;lastAnalysisAt=Date.now();
+    $('sensorStatus').textContent='센서 작동 중';$('sensorDot').className='dot active';addLog('IMU 측정 시작');saveState();render();
+  }catch(e){$('sensorStatus').textContent='센서 권한 필요';$('sensorDot').className='dot warn';addLog('센서 시작 실패: '+e.message);render()}
+}
+function onMotion(e){addMotionSample(e.accelerationIncludingGravity||{x:0,y:0,z:9.81},e.rotationRate||{alpha:0,beta:0,gamma:0},e.acceleration||null);if(Date.now()-lastAnalysisAt>=400)analysisTick()}
+
+function featureSummaryFromSamples(s){
+  if(!s.length)return{linRms:0,jerkMean:0,rotMean:0,stepRate:0,g:{x:0,y:0,z:1}};
+  const lin=s.map(v=>v.linMag),jerk=s.map(v=>v.jerk),rot=s.map(v=>v.rotation),vert=s.map(v=>v.verticalUp);
+  const dur=Math.max(.5,(s[s.length-1].t-s[0].t)/1000);
+  const peakTh=Math.max(.22,percentile(vert.map(Math.abs),.70));
+  return{
+    linRms:rms(lin), jerkMean:mean(jerk), rotMean:mean(rot),
+    stepRate:(countVerticalPeaks(s,peakTh)/dur)*60,
+    g:normalize({x:mean(s.map(v=>v.gx)),y:mean(s.map(v=>v.gy)),z:mean(s.map(v=>v.gz))})
+  };
+}
+function recomputePostureTemplate(type){
+  const entry=state.calibration.postures[type];
+  if(!entry||!Array.isArray(entry.trials)||!entry.trials.length)return;
+  const centroid=normalize({
+    x:mean(entry.trials.map(t=>t.g.x)),
+    y:mean(entry.trials.map(t=>t.g.y)),
+    z:mean(entry.trials.map(t=>t.g.z))
+  });
+  const angles=entry.trials.map(t=>angleDeg(t.g,centroid));
+  entry.g=centroid;
+  entry.dispersionDeg=angles.length>1?Math.sqrt(mean(angles.map(v=>v*v))):0;
+  entry.feature={
+    linRms:mean(entry.trials.map(t=>t.linRms)),
+    rotMean:mean(entry.trials.map(t=>t.rotMean))
+  };
+  entry.savedAt=Date.now();
+}
+function extractTransitionLobes(s){
+  const out=[];let sign=0,impulse=0,peak=0,start=0,lastT=0;
+  const flush=()=>{if(sign&&impulse>.025&&peak>.12&&lastT-start>=80&&lastT-start<=1600)out.push({sign,impulse,peak,durationMs:lastT-start});sign=0;impulse=0;peak=0;start=0};
+  for(const v of s){
+    const a=v.verticalUp,sgn=a>.08?1:a<-.08?-1:0;
+    if(sgn===0){if(sign&&v.t-lastT>160)flush();continue}
+    if(sign&&sgn!==sign)flush();
+    if(!sign){sign=sgn;start=v.t}
+    impulse+=Math.max(Math.abs(a)-.08,0)*(v.dt||.02);peak=Math.max(peak,Math.abs(a));lastT=v.t;
+  }
+  flush();
+  return out.sort((a,b)=>b.impulse-a.impulse).slice(0,14);
+}
+function calibrationDuration(type){
+  if(type==='noise')return 5000;
+  if(type==='walking')return 15000;
+  if(type==='transition')return 20000;
+  return 3500;
+}
+function calibrationInstruction(type){
+  return{
+    noise:'스마트폰 위치를 고정하고 5초간 완전히 정지하세요.',
+    seated:'앉은 자세를 유지하세요. 같은 휴대폰 위치로 총 3회 이상 권장합니다.',
+    standing:'서 있는 자세를 유지하세요. 같은 휴대폰 위치로 총 3회 이상 권장합니다.',
+    lying:'누운 자세를 유지하세요. 같은 휴대폰 위치로 총 3회 이상 권장합니다.',
+    walking:'평소 속도로 15초간 자연스럽게 걸으세요.',
+    transition:'20초 동안 앉기↔서기를 약 5회 반복하세요.'
+  }[type]||'자세를 유지하세요.';
+}
+function beginCalibration(type){
+  if(!sensorRunning){$('calStatus').textContent='먼저 IMU 측정을 시작하세요.';return}
+  if(calJob){$('calStatus').textContent='이미 다른 캘리브레이션을 진행 중입니다.';return}
+  const duration=calibrationDuration(type),startAt=Date.now();
+  calJob={type,start:startAt,duration};
+  $('calStatus').textContent=calibrationInstruction(type);
+  const timer=setInterval(()=>{
+    if(!calJob){clearInterval(timer);return}
+    const pct=clamp((Date.now()-calJob.start)/duration)*100;
+    $('calProgress').style.width=pct+'%';
+    if(pct>=100){
+      clearInterval(timer);
+      const job=calJob;calJob=null;$('calProgress').style.width='0%';
+      finishCalibration(job.type,job.start,Date.now());
+    }
+  },100);
+}
+function finishCalibration(type,startAt,endAt){
+  const s=motionWindow.filter(v=>v.t>=startAt&&v.t<=endAt);
+  if(s.length<20){$('calStatus').textContent='샘플 부족으로 실패했습니다. 센서 권한과 측정 상태를 확인하세요.';return}
+  if(type==='noise'){
+    const lin=s.map(v=>v.linMag),jerk=s.map(v=>v.jerk),rot=s.map(v=>v.rotation);
+    state.calibration.noise={
+      ready:true,linRms:rms(lin),linP95:percentile(lin,.95),
+      jerk:mean(jerk),jerkP95:percentile(jerk,.95),
+      rot:mean(rot),rotP95:percentile(rot,.95)
+    };
+    $('calStatus').textContent='정지 noise profile 저장 완료';addLog('정지 noise calibration 완료');
+  }else if(['seated','standing','lying'].includes(type)){
+    const f=featureSummaryFromSamples(s);
+    const prev=state.calibration.postures[type];
+    const trials=Array.isArray(prev?.trials)?prev.trials.slice(-4):[];
+    trials.push({g:f.g,linRms:f.linRms,rotMean:f.rotMean,savedAt:Date.now()});
+    state.calibration.postures[type]={trials};recomputePostureTemplate(type);
+    const e=state.calibration.postures[type];
+    $('calStatus').textContent=`${type} template 저장 · ${e.trials.length}회 · 분산 ${e.dispersionDeg.toFixed(1)}°`;
+    addLog(`${type} posture calibration ${e.trials.length}회차 완료`);
+  }else if(type==='walking'){
+    const f=featureSummaryFromSamples(s);
+    const trials=state.calibration.walking.trials.slice(-4);
+    trials.push({linRms:f.linRms,jerkMean:f.jerkMean,rotMean:f.rotMean,stepRate:f.stepRate,savedAt:Date.now()});
+    const linVals=trials.map(t=>t.linRms),jerkVals=trials.map(t=>t.jerkMean),rotVals=trials.map(t=>t.rotMean),stepVals=trials.map(t=>t.stepRate);
+    state.calibration.walking={ready:true,trials,
+      linRmsP20:percentile(linVals,.20),jerkP20:percentile(jerkVals,.20),rotP20:percentile(rotVals,.20),
+      stepRateMedian:percentile(stepVals,.50)
+    };
+    $('calStatus').textContent=`Walking profile 저장 · ${trials.length} trial · step ${Math.round(state.calibration.walking.stepRateMedian)} bpm`;
+    addLog(`walking calibration ${trials.length}회차 완료`);
+  }else if(type==='transition'){
+    const lobes=extractTransitionLobes(s);
+    if(lobes.length<4){$('calStatus').textContent='전환 impulse가 충분히 검출되지 않았습니다. 5회 정도 다시 반복하세요.';return}
+    const trial={impulseP20:percentile(lobes.map(x=>x.impulse),.20),peakP20:percentile(lobes.map(x=>x.peak),.20),events:lobes.length,savedAt:Date.now()};
+    const trials=state.calibration.transition.trials.slice(-4);trials.push(trial);
+    state.calibration.transition={ready:true,trials,
+      impulseP20:percentile(trials.map(t=>t.impulseP20),.20),
+      peakP20:percentile(trials.map(t=>t.peakP20),.20),
+      medianEvents:percentile(trials.map(t=>t.events),.50)
+    };
+    $('calStatus').textContent=`Transition profile 저장 · ${trials.length} trial · ${lobes.length} impulse lobe`;
+    addLog(`transition calibration ${trials.length}회차 완료`);
+  }
+  predictionQueue=[];saveState();render();drawDebugCharts();
+}
+function clearCalibration(){state.calibration=defaultState().calibration;predictionQueue=[];saveState();addLog('캘리브레이션 초기화');render()}
+
+function seedDemoTemplates(){state.calibration.postures={seated:{...DEMO_TEMPLATES.seated},standing:{...DEMO_TEMPLATES.standing},lying:{...DEMO_TEMPLATES.lying}};state.calibration.noise={ready:true,linRms:.045,jerk:.03,rot:3}}
+function pushSynthetic(target){
+  const now=Date.now(),dt=.05,noise=()=> (Math.random()-.5);let g=DEMO_TEMPLATES[target]?.g||DEMO_TEMPLATES.standing.g;let linMag=.04+Math.abs(noise())*.025,verticalUp=noise()*.05,rotation=3+Math.abs(noise())*4,jerk=.08+Math.abs(noise())*.05;
+  if(target==='walking'){const phase=demoPhase*2*Math.PI*1.8;verticalUp=.9*Math.sin(phase)+noise()*.18;linMag=.75+Math.abs(Math.sin(phase))*0.55+Math.abs(noise())*.12;rotation=28+Math.abs(noise())*20;jerk=2.0+Math.abs(noise())*1.0;g=DEMO_TEMPLATES.standing.g}
+  motionWindow.push({t:now,dt,linMag,verticalUp,rotation,jerk,gx:g.x,gy:g.y,gz:g.z});motionWindow=motionWindow.filter(v=>v.t>=now-10000).slice(-600);demoPhase+=dt;
+}
+function startDemo(target){
+  clearInterval(demoTimer);state.operationMode='demo';state.phoneMode='pocket';seedDemoTemplates();sensorRunning=true;state.sensorStarted=true;predictionQueue=[];lastAnalysisAt=Date.now()-500;addLog(`Demo 시작: ${target}`);let elapsed=0;demoTimer=setInterval(()=>{pushSynthetic(target);elapsed+=.05;if(Date.now()-lastAnalysisAt>=400)analysisTick();if(elapsed>=8){clearInterval(demoTimer);addLog(`Demo 종료: ${target}`);render()}},50);render()}
+
+function recordValidationTruth(truth){
+  const predicted=state.currentActivity||ACT.UNKNOWN;state.validation.samples.push({t:new Date().toISOString(),truth,predicted,phoneMode:state.phoneMode,confidence:state.confidence.score});state.validation.samples=state.validation.samples.slice(-2000);addLog(`검증 라벨: truth ${truth} / pred ${predicted}`);saveState();render();
+}
+function validationSummary(){const xs=state.validation.samples||[];const correct=xs.filter(x=>x.truth===x.predicted).length;return{n:xs.length,accuracy:xs.length?correct/xs.length:null}}
+function startTransitionTrial(kind){
+  if(transitionTrialTimer){clearInterval(transitionTrialTimer);transitionTrialTimer=null}
+  const baseline=state.eligibleTransitionCount,start=Date.now(),duration=8000;$('transitionTrialStatus').textContent=kind==='valid'?'유효 전환을 수행하세요: 앉기→서기 또는 앉기→보행':'제외 전환을 수행하세요: 앉기→눕기, 서기→앉기, 보행→앉기';
+  transitionTrialTimer=setInterval(()=>{const elapsed=Date.now()-start;$('transitionTrialProgress').style.width=(clamp(elapsed/duration)*100)+'%';if(elapsed>=duration){clearInterval(transitionTrialTimer);transitionTrialTimer=null;const changed=state.eligibleTransitionCount>baseline;const pass=kind==='valid'?changed:!changed;state.validation.transitionTrials.push({t:new Date().toISOString(),kind,pass,delta:state.eligibleTransitionCount-baseline,phoneMode:state.phoneMode});state.validation.transitionTrials=state.validation.transitionTrials.slice(-500);$('transitionTrialStatus').textContent=`결과: ${pass?'적중':'실패'} · 전환 카운트 Δ${state.eligibleTransitionCount-baseline}`;saveState();render()}},100);
+}
+function confusionMatrixHtml(){
+  const labels=[ACT.SEATED,ACT.STANDING,ACT.LYING,ACT.WALKING,ACT.UNKNOWN],xs=state.validation.samples||[];let html='<thead><tr><th>Truth \\ Pred</th>'+labels.map(l=>`<th>${l}</th>`).join('')+'</tr></thead><tbody>';
+  for(const t of labels){html+=`<tr><th>${t}</th>`+labels.map(p=>`<td>${xs.filter(x=>x.truth===t&&x.predicted===p).length}</td>`).join('')+'</tr>'}return html+'</tbody>';
+}
+function exportValidation(){
+  const rows=[['type','timestamp','truth_or_kind','predicted_or_pass','phoneMode','confidence_or_delta']];for(const x of state.validation.samples||[])rows.push(['state',x.t,x.truth,x.predicted,x.phoneMode,x.confidence]);for(const x of state.validation.transitionTrials||[])rows.push(['transition',x.t,x.kind,x.pass?'pass':'fail',x.phoneMode,x.delta]);const csv='\ufeff'+rows.map(r=>r.map(csvEscape).join(',')).join('\n');downloadBlob(csv,'day2sleep_validation.csv','text/csv;charset=utf-8');
+}
+function clearValidation(){state.validation={samples:[],transitionTrials:[]};saveState();render()}
+function adherenceRate(){const a=state.adherence,success=(a.verified||0)+(a.manual||0);return a.attempts?clamp(success/a.attempts,0,1):0}
+function renderLeaderboard(){
+  const me={name:state.community.nickname||'나',recovery:Math.round(100-state.bodyLoad),adherence:Math.round(adherenceRate()*100),me:true};const mock=[{name:'새벽러너',recovery:91,adherence:88},{name:'침대탈출',recovery:86,adherence:94},{name:'25분챌린저',recovery:80,adherence:76},{name:'카이스트A',recovery:73,adherence:82}];const rows=[...mock,me].sort((a,b)=>b.recovery-a.recovery||b.adherence-a.adherence);$('leaderboardBody').innerHTML=rows.map((r,i)=>`<tr class="${r.me?'me':''}"><td>${i+1}</td><td>${r.name}${r.me?' · 나':''}</td><td>${r.recovery}</td><td>${r.adherence}%</td></tr>`).join('');
+}
+function saveFeedback(){
+  const item={t:new Date().toISOString(),satisfaction:Number($('fbSatisfaction').value),accuracy:Number($('fbAccuracy').value),burden:Number($('fbBurden').value),reuse:Number($('fbReuse').value),comment:$('fbComment').value.trim(),bls:state.bodyLoad,adherence:Math.round(adherenceRate()*100)};state.feedback.push(item);state.feedback=state.feedback.slice(-200);$('fbComment').value='';saveState();render();
+}
+
+function resetMeasurement(){
+  const keep={operationMode:state.operationMode,phoneMode:state.phoneMode,calibration:state.calibration,survey:state.survey,awakeHours:state.awakeHours,adherence:state.adherence,validation:state.validation,community:state.community,feedback:state.feedback};Object.assign(state,defaultState());Object.assign(state,keep);motionWindow=[];predictionQueue=[];transitionGate={preStill:0,stillStreak:0,inMotion:false,cooldownUntil:0,last:'대기'};directionalCandidate={type:null,startedAt:0,strength:0,settle:0};lastFeatures={linRms:0,linMean:0,linStd:0,jerkMean:0,rotMean:0,rotStd:0,verticalRms:0,stepRate:0,dynamicScore:0,g:{x:0,y:0,z:1},n:0};lastRaw={label:ACT.UNKNOWN,confidence:0,reason:'대기'};lastMotionTransition='대기';lastDirectional='없음';lastMotionStartAt=0;computeOfficialScores(false);saveState();render()}
+
+function scoreBand(score){if(score>=70)return['높음','badge-bad'];if(score>=40)return['보통','badge-warn'];return['낮음','badge-good']}
+function render(){
+  const conf=state.confidence.score>=75?['높음','badge-good']:state.confidence.score>=45?['중간','badge-warn']:['낮음','badge-bad'];const bl=scoreBand(state.bodyLoad),sa=scoreBand(state.sActivity),p=profile();
+  $('activityValue').textContent=state.currentActivity;$('activityHint').textContent=`raw: ${state.rawActivity} · ${lastRaw.reason||''}`;$('confidenceValue').innerHTML=`<span class="${conf[1]}">${conf[0]}</span>`;$('confidenceHint').textContent=`${state.confidence.score}점 · ${state.confidence.reason}`;
+  $('activityScoreHome').textContent=Math.round((state.sNorm||0)*100);$('sedentaryTime').textContent=formatTime(state.sedentarySeconds);$('boutRuleLabel').textContent=`${state.operationMode}: ${formatTime(p.sedentaryBout)} bout`;$('boutCount').textContent=state.boutCount+'회';$('breakCount').textContent=state.breakCount+'회';$('longestBout').textContent=formatTime(state.longestSedentaryBout);$('walkingTime').textContent=formatTime(state.activitySeconds[ACT.WALKING]||0);$('transitionCount').textContent=state.eligibleTransitionCount+'회';$('homeBodyLoad').innerHTML=`${state.bodyLoad}점 · <span class="${bl[1]}">${bl[0]}</span>`;
+  $('operationMode').value=state.operationMode;$('phoneMode').value=state.phoneMode;const notice=state.phoneMode==='pocket'?'4-state 분류 모드입니다. 개인 posture calibration을 권장합니다.':state.phoneMode==='hand'?'손 모드: walking/transition 중심, 정적 앉기·서기는 낮은 신뢰도로 처리합니다.':'책상 위: 사용자 몸 상태를 대표하지 않으므로 자동 판정을 보류합니다.';$('positionNotice').textContent=notice;$('positionNotice').className=state.phoneMode==='pocket'?'notice ok':'notice';
+  $('noiseStatus').textContent=state.calibration.noise.ready?'완료':'미완료';$('seatedCalStatus').textContent=state.calibration.postures.seated?'완료':'미완료';$('standingCalStatus').textContent=state.calibration.postures.standing?'완료':'미완료';$('lyingCalStatus').textContent=state.calibration.postures.lying?'완료':'미완료';
+  const sNormPct=Math.round((state.sNorm||0)*100);const snBand=scoreBand(sNormPct);$('sActivityValue').textContent=sNormPct;$('sActivityMarker').style.left=sNormPct+'%';$('sActivityLabel').innerHTML=`현재 <span class="${snBand[1]}">${snBand[0]}</span> · 높을수록 객관 부하 위험이 큼.`;$('saRatio').textContent=(state.sParts.ratio||0).toFixed(3);$('saBout').textContent=(state.sParts.bout||0).toFixed(3);$('saTransitionDeficit').textContent=(state.sParts.activity||0).toFixed(3);$('actualTransitions').textContent=state.eligibleTransitionCount+'회';$('targetTransitions').textContent=(state.sParts.targetTransitions||0).toFixed(1)+'회';$('awakeHours').value=state.awakeHours;$('awakeHoursVal').textContent=Number(state.awakeHours).toFixed(1)+'시간';$('demoScaleNotice').textContent=state.operationMode==='demo'?'Demo 스케일: S_bout 기준 30초, 목표 전환 10초당 1회. 동일한 점수 구조를 사용합니다.':'Field 기준: S_bout 기준 3시간, 목표 전환 = 각성시간(분) ÷ 25분.';
+  $('neckPain').value=state.survey.neck;$('backPain').value=state.survey.back;$('fatigue').value=state.survey.fatigue;$('neckVal').textContent=state.survey.neck;$('backVal').textContent=state.survey.back;$('fatigueVal').textContent=state.survey.fatigue;$('bodyLoadValue').textContent=state.bodyLoad;$('bodyLoadMarker').style.left=state.bodyLoad+'%';$('bodyLoadLabel').innerHTML=`현재 <span class="${bl[1]}">${bl[0]}</span> 단계`;$('snormRaw').textContent=(state.sNorm||0).toFixed(3);$('fnormRaw').textContent=(state.fNorm||0).toFixed(3);$('blObjective').textContent=(state.blParts.objective||0).toFixed(1)+'점';$('blSubjective').textContent=(state.blParts.subjective||0).toFixed(1)+'점';
+  $('routineType').value=state.routine.type;const rs=routineSpec();$('routineTitle').textContent=rs.title;$('routineDesc').textContent=rs.desc;$('routineElapsed').textContent=formatTime(state.routine.elapsed);$('routineNonSed').textContent=formatTime(state.routine.nonSed);$('routineWalk').textContent=formatTime(state.routine.walking);$('routineMove').textContent=formatTime(state.routine.moving);$('routineRot').textContent=formatTime(state.routine.rotationActive);$('routineResult').textContent=state.routine.result;$('routineStatus').textContent=state.routine.active?`측정 중 · ${formatTime(state.routine.elapsed)} / window ${formatTime(p.routineWindow)}`:'대기/종료 · '+state.routine.result;let prog=0;if(state.routine.type==='stand_break')prog=state.routine.nonSed/p.standNonSed;else if(state.routine.type==='walk_break')prog=state.routine.walking/p.walkRequired;else prog=Math.min(state.routine.moving/p.mobilityMove,state.routine.rotationActive/p.mobilityRot);$('routineProgress').style.width=(clamp(prog)*100)+'%';$('routineLog').textContent=state.routineLogs.length?state.routineLogs.join('\n'):'아직 기록이 없습니다.';
+  $('rawClass').textContent=`${lastRaw.label} (${Math.round((lastRaw.confidence||0)*100)}%)`;$('smoothClass').textContent=state.currentActivity;$('motionTransition').textContent=lastMotionTransition;$('directionalTransition').textContent=lastDirectional;$('linRms').textContent=lastFeatures.linRms.toFixed(3);$('jerkMean').textContent=lastFeatures.jerkMean.toFixed(3);$('gyroMean').textContent=lastFeatures.rotMean.toFixed(1);$('stepRate').textContent=Math.round(lastFeatures.stepRate)+' bpm';const th=adaptiveThresholds();$('thStillRms').textContent=th.stillRms.toFixed(3);$('thMoveRms').textContent=th.moveRms.toFixed(3);$('thMoveJerk').textContent=th.moveJerk.toFixed(3);$('thMoveRot').textContent=th.moveRot.toFixed(1);$('mainLog').textContent=state.logs.length?state.logs.join('\n'):'아직 기록이 없습니다.';
+  const wc=state.calibration.walking,tc=state.calibration.transition;
+  $('walkingCalStatus').textContent=wc.ready?`완료 · ${wc.trials.length} trial`:'미완료';
+  $('transitionCalStatus').textContent=tc.ready?`완료 · ${tc.trials.length} trial`:'미완료';
+  $('calQualityText').textContent=calibrationQualityText();
+  $('routineWalkContinuous').textContent=formatTime(state.routine.continuousWalking);$('routineEvidence').textContent=state.routine.evidenceScore+'점';
+  const thDbg=adaptiveThresholds();
+  $('debugActivity').textContent=state.currentActivity;$('debugRaw').textContent=`${lastRaw.label} / ${Math.round((lastRaw.confidence||0)*100)}%`;$('debugTransition').textContent=`${lastMotionTransition} · ${lastDirectional}`;
+  $('debugMoveRms').textContent=thDbg.moveRms.toFixed(3);$('debugWalkRms').textContent=thDbg.walkRms.toFixed(3);$('debugImpulse').textContent=thDbg.impulse.toFixed(3);$('debugCalibration').textContent=calibrationQualityText();
+  const vs=validationSummary();$('validationN').textContent=vs.n;$('validationAcc').textContent=vs.accuracy===null?'-':Math.round(vs.accuracy*100)+'%';const tt=state.validation.transitionTrials||[];$('transitionTrialScore').textContent=tt.length?Math.round(100*tt.filter(x=>x.pass).length/tt.length)+'%':'-';$('confusionMatrixTable').innerHTML=confusionMatrixHtml();
+  const ar=Math.round(adherenceRate()*100);$('recoveryScore').textContent=Math.round(100-state.bodyLoad);$('adherencePill').textContent='순응도 '+ar+'%';$('routineAttempts').textContent=state.adherence.attempts||0;$('routineSuccess').textContent=(state.adherence.verified||0)+(state.adherence.manual||0);$('routineFailed').textContent=state.adherence.failed||0;$('communityNickname').value=state.community.nickname||'도윤';$('feedbackStatus').textContent=`저장된 응답 ${state.feedback.length}건 · 브라우저 localStorage에 보관됩니다.`;renderLeaderboard();
+  if(sensorRunning){$('sensorStatus').textContent='센서 작동 중';$('sensorDot').className='dot active'}saveState();
+}
+function showScreen(name){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.querySelector(`#screen-${name}`).classList.add('active');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.screen===name))}
+
+document.querySelectorAll('.nav-btn').forEach(btn=>btn.addEventListener('click',()=>showScreen(btn.dataset.screen)));
+$('startBtn').addEventListener('click',startSensor);
+$('operationMode').addEventListener('change',()=>{state.operationMode=$('operationMode').value;addLog('운영 모드: '+state.operationMode);saveState();render()});
+$('phoneMode').addEventListener('change',()=>{state.phoneMode=$('phoneMode').value;predictionQueue=[];addLog('휴대폰 위치: '+PHONE_LABEL[state.phoneMode]);saveState();render()});
+document.querySelectorAll('[data-demo]').forEach(b=>b.addEventListener('click',()=>startDemo(b.dataset.demo)));
+document.querySelectorAll('[data-cal]').forEach(b=>b.addEventListener('click',()=>beginCalibration(b.dataset.cal)));
+$('clearCalBtn').addEventListener('click',clearCalibration);
+['neckPain','backPain','fatigue'].forEach(id=>$(id).addEventListener('input',()=>{state.survey={neck:Number($('neckPain').value),back:Number($('backPain').value),fatigue:Number($('fatigue').value)};computeOfficialScores(false);render()}));
+$('awakeHours').addEventListener('input',()=>{state.awakeHours=Number($('awakeHours').value);computeOfficialScores(false);render()});
+$('calcBodyLoadBtn').addEventListener('click',computeBodyLoad);
+$('routineType').addEventListener('change',()=>{state.routine.type=$('routineType').value;saveState();render()});$('routineStartBtn').addEventListener('click',startRoutine);$('routineStopBtn').addEventListener('click',stopRoutine);$('routineManualBtn').addEventListener('click',manualRoutineConfirm);$('resetBtn').addEventListener('click',resetMeasurement);
+$('freezeChartBtn').addEventListener('click',()=>{chartFrozen=!chartFrozen;$('freezeChartBtn').textContent=chartFrozen?'그래프 재개':'그래프 일시정지';if(!chartFrozen)drawDebugCharts()});
+$('exportCsvBtn').addEventListener('click',exportCsv);
+document.querySelectorAll('[data-truth]').forEach(b=>b.addEventListener('click',()=>recordValidationTruth(b.dataset.truth)));$('validTransitionTrialBtn').addEventListener('click',()=>startTransitionTrial('valid'));$('excludedTransitionTrialBtn').addEventListener('click',()=>startTransitionTrial('excluded'));$('exportValidationBtn').addEventListener('click',exportValidation);$('clearValidationBtn').addEventListener('click',clearValidation);$('saveNicknameBtn').addEventListener('click',()=>{state.community.nickname=$('communityNickname').value.trim()||'나';saveState();render()});$('saveFeedbackBtn').addEventListener('click',saveFeedback);
+window.addEventListener('resize',()=>drawDebugCharts());
+computeOfficialScores(false);render();drawDebugCharts();
+</script>
+<script>
+(function(){
+  'use strict';
+  const KEY='day2sleep_sleep_logs_v1';
+  const byId=id=>document.getElementById(id);
+  function load(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(_){return[]}}
+  function save(xs){try{localStorage.setItem(KEY,JSON.stringify(xs))}catch(_){}}
+  function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+  function renderSleep(){
+    const xs=load();
+    const q=byId('sleepQuality'),r=byId('sleepRefresh');
+    if(q&&byId('sleepQualityVal'))byId('sleepQualityVal').textContent=q.value;
+    if(r&&byId('sleepRefreshVal'))byId('sleepRefreshVal').textContent=r.value;
+    if(byId('sleepLogStatus'))byId('sleepLogStatus').textContent=`저장된 수면 기록 ${xs.length}건`;
+    if(byId('sleepLogList')){
+      byId('sleepLogList').innerHTML=xs.length?xs.slice().reverse().slice(0,12).map(x=>
+        `<div style="padding:8px 0;border-bottom:1px solid var(--line)"><strong>${esc(x.date)}</strong> · ${esc(x.bed)}→${esc(x.wake)} · 만족 ${x.quality}/5 · 개운함 ${x.refresh}/5${x.note?`<br><span>${esc(x.note)}</span>`:''}</div>`
+      ).join(''):'아직 수면 기록이 없습니다.';
+    }
+  }
+  const q=byId('sleepQuality'),r=byId('sleepRefresh'),saveBtn=byId('saveSleepLogBtn');
+  if(q)q.addEventListener('input',renderSleep);
+  if(r)r.addEventListener('input',renderSleep);
+  if(saveBtn)saveBtn.addEventListener('click',()=>{
+    const item={date:new Date().toLocaleDateString('ko-KR'),t:new Date().toISOString(),bed:byId('sleepBedtime').value,wake:byId('sleepWakeTime').value,quality:Number(byId('sleepQuality').value),refresh:Number(byId('sleepRefresh').value),note:byId('sleepNote').value.trim()};
+    const xs=load();xs.push(item);save(xs.slice(-120));byId('sleepNote').value='';renderSleep();
+  });
+  renderSleep();
+})();
+</script></body>
+</html>
